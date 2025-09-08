@@ -165,8 +165,10 @@
 #rpg-canvas {
     display: block;
     margin: 0 auto;
-    width: 768px !important;  /* 强制宽度 */
-    height: 640px !important;  /* 强制高度 */
+    width: 768px;
+    height: 640px;
+    max-width: 100%;
+    max-height: 100%;
     /* 防止触摸事件穿透 */
     touch-action: none;
     pointer-events: auto;
@@ -256,28 +258,36 @@
     white-space: pre-wrap;
 }
 
-/* RPG悬浮按钮 */
+/* RPG悬浮按钮 - 默认样式 */
 #rpg-floating-button {
-    position: fixed;
-    bottom: 20px;
-    right: 20px;
-    width: 60px;
-    height: 60px;
-    border-radius: 50%;
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-    border: 3px solid #fff;
-    box-shadow: 0 4px 15px rgba(102, 126, 234, 0.5);
-    cursor: pointer;
-    z-index: 99999;  /* 提高z-index确保在最上层 */
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 28px;
-    color: white;
-    transition: all 0.3s ease;
+    position: fixed !important;
+    bottom: 20px !important;
+    right: 20px !important;
+    width: 60px !important;
+    height: 60px !important;
+    border-radius: 50% !important;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%) !important;
+    border: 3px solid #fff !important;
+    box-shadow: 0 4px 15px rgba(102, 126, 234, 0.5) !important;
+    cursor: pointer !important;
+    z-index: 999999 !important;  /* 最高层级 */
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    font-size: 28px !important;
+    color: white !important;
+    transition: all 0.3s ease !important;
     /* 确保不被其他元素影响 */
-    pointer-events: auto;
-    -webkit-tap-highlight-color: transparent;
+    pointer-events: auto !important;
+    -webkit-tap-highlight-color: transparent !important;
+    visibility: visible !important;
+    opacity: 1 !important;
+    /* 防止被其他CSS覆盖 */
+    top: auto !important;
+    left: auto !important;
+    transform: none !important;
+    margin: 0 !important;
+    padding: 0 !important;
 }
 
 #rpg-floating-button:hover {
@@ -306,8 +316,67 @@
     animation: pulse 2s infinite;
 }
 
-/* 手机适配 */
+/* 手机适配 - 小屏幕 */
+@media (max-width: 480px) {
+    /* 针对竖屏手机的特殊处理 */
+    #rpg-floating-button {
+        /* 位置固定在屏幕可视区域内 */
+        position: fixed !important;
+        bottom: 70px !important;   /* 在输入框上方 */
+        right: 10px !important;    /* 靠右边 */
+        left: auto !important;     /* 取消左边定位 */
+        transform: none !important; /* 取消变换 */
+        
+        /* 按钮样式 */
+        width: 50px !important;
+        height: 50px !important;
+        z-index: 999999 !important;
+        display: flex !important;
+        opacity: 0.9 !important;
+        visibility: visible !important;
+        
+        /* 脉冲动画吸引注意 */
+        animation: pulse 3s infinite !important;
+    }
+    
+    /* RPG画布手机适配 */
+    #rpg-canvas {
+        width: 100% !important;
+        height: auto !important;
+        max-width: 100vw !important;
+        aspect-ratio: 768/640;
+    }
+    
+    #rpg-game-container {
+        width: 100% !important;
+        height: 100% !important;
+        max-width: 100vw !important;
+    }
+}
+
+/* 手机适配 - 中等屏幕和通用手机屏幕 */
 @media (max-width: 768px) {
+    /* 悬浮按钮位置确保在屏幕内 */
+    #rpg-floating-button {
+        position: fixed !important;
+        bottom: 70px !important;
+        right: 10px !important;
+        width: 55px !important;
+        height: 55px !important;
+        z-index: 999999 !important;
+        display: flex !important;
+        visibility: visible !important;
+        opacity: 0.9 !important;
+    }
+    
+    /* RPG画布缩放适配 */
+    #rpg-canvas {
+        width: calc(100vw - 20px) !important;
+        height: auto !important;
+        aspect-ratio: 768/640;
+        max-height: calc(100vh - 100px) !important;
+    }
+    
     #rpg-floating-window {
         width: 100vw;
         height: 100vh;
@@ -358,17 +427,6 @@
         font-size: 10px;
     }
     
-    /* 悬浮按钮位置调整 */
-    #rpg-floating-button {
-        bottom: 80px;  /* 更高一点避开手机底部导航和输入框 */
-        right: 10px;   /* 更靠边一点 */
-        width: 55px;   /* 稍微大一点方便点击 */
-        height: 55px;
-        z-index: 99999 !important;  /* 强制最高层级 */
-        position: fixed !important;
-        display: flex !important;  /* 确保显示 */
-        opacity: 1 !important;     /* 确保不透明 */
-    }
     
     /* 添加遮罩层防止误触 */
     #rpg-floating-window::before {
