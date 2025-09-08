@@ -677,7 +677,7 @@ jQuery(async () => {
   
   // 创建悬浮按钮和RPG窗口（直接添加到body，不依赖扩展面板）
   const floatingButton = `
-    <div id="rpg-floating-button" title="打开RPG记忆世界">
+    <div id="rpg-floating-button" title="打开RPG记忆世界" style="position: fixed !important; z-index: 999999 !important; display: flex !important;">
       <svg width="32" height="32" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
         <!-- 游戏手柄图标 -->
         <path d="M21 6H3c-1.1 0-2 .9-2 2v8c0 1.1.9 2 2 2h5.5l3.5-4 3.5 4H21c1.1 0 2-.9 2-2V8c0-1.1-.9-2-2-2z" 
@@ -724,13 +724,58 @@ jQuery(async () => {
     </div>
   `;
   
-  $('body').append(floatingButton);
-  $('body').append(rpgWindow);
-  
-  // 根据设置显示/隐藏悬浮按钮
-  if (extension_settings[extensionName]?.rpgFloatingEnabled === false) {
-    $('#rpg-floating-button').hide();
+  // 创建并添加RPG按钮的函数
+  function createRPGButton() {
+    // 先检查是否已存在
+    if ($('#rpg-floating-button').length > 0) {
+      console.log('RPG按钮已存在，跳过创建');
+      return;
+    }
+    
+    // 创建按钮元素
+    const $button = $(floatingButton);
+    const $window = $(rpgWindow);
+    
+    // 添加到body最后
+    $('body').append($button);
+    $('body').append($window);
+    
+    // 强制设置样式确保显示
+    $button.attr('style', `
+      position: fixed !important;
+      bottom: 70px !important;
+      right: 10px !important;
+      width: 55px !important;
+      height: 55px !important;
+      border-radius: 50% !important;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%) !important;
+      border: 3px solid #fff !important;
+      box-shadow: 0 4px 15px rgba(102, 126, 234, 0.5) !important;
+      cursor: pointer !important;
+      z-index: 999999 !important;
+      display: flex !important;
+      align-items: center !important;
+      justify-content: center !important;
+      visibility: visible !important;
+      opacity: 0.9 !important;
+    `);
+    
+    console.log('✅ RPG悬浮按钮已创建并添加到body');
+    console.log('按钮元素:', $('#rpg-floating-button'));
+    console.log('按钮位置:', $('#rpg-floating-button').offset());
+    console.log('按钮CSS:', $('#rpg-floating-button').attr('style'));
+    
+    // 根据设置显示/隐藏
+    if (extension_settings[extensionName]?.rpgFloatingEnabled === false) {
+      $button.hide();
+      console.log('按钮已隐藏（设置为禁用）');
+    }
   }
+  
+  // 多次尝试创建按钮，确保成功
+  setTimeout(createRPGButton, 500);   // 0.5秒后第一次尝试
+  setTimeout(createRPGButton, 1000);  // 1秒后第二次尝试
+  setTimeout(createRPGButton, 2000);  // 2秒后第三次尝试
   
   // Inline drawer 折叠/展开功能 - 使用延迟绑定
   setTimeout(() => {
