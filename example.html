@@ -1,0 +1,786 @@
+<div class="smart-memory-settings">
+    <!-- 智能总结注入器 -->
+    <div class="inline-drawer">
+        <div class="inline-drawer-header inline-drawer-toggle">
+            <b>智能总结注入器-RPG版</b>
+            <div class="inline-drawer-icon fa-solid fa-circle-chevron-down"></div>
+        </div>
+        <div class="inline-drawer-content" style="display: none;">
+            <div class="flex-container">
+                <!-- AI配置 -->
+                <div class="setting-item">
+                    <label for="smart_memory_api_key">API密钥：</label>
+                    <input id="smart_memory_api_key" type="password" placeholder="输入你的API密钥" />
+                </div>
+                
+                <div class="setting-item">
+                    <label for="smart_memory_api_url">API地址：</label>
+                    <input id="smart_memory_api_url" type="text" value="https://api.openai.com/v1" />
+                </div>
+                
+                <div class="setting-item">
+                    <button id="get_smart_memory_models" class="menu_button" style="min-width: 120px;">获取模型列表</button>
+                    <small style="display: block; margin-top: 5px;">先填写API密钥和地址，然后点击获取</small>
+                </div>
+                
+                <div class="setting-item">
+                    <label for="smart_memory_model">AI模型：</label>
+                    <select id="smart_memory_model">
+                        <option value="">请先获取模型列表</option>
+                    </select>
+                    <small id="model_status" style="color: #888;"></small>
+                </div>
+                
+                <hr class="sysHR">
+                
+                <!-- 扫描设置 -->
+                <div class="setting-item">
+                    <label for="smart_memory_depth">扫描深度（最近几条消息）：</label>
+                    <input type="range" id="smart_memory_depth" min="1" max="20" step="1" value="3" />
+                    <span id="smart_memory_depth_value">3</span>
+                    <small>仅扫描最近的对话消息（包括用户和AI的发言）</small>
+                </div>
+                
+                <div class="setting-item">
+                    <label for="smart_memory_prompt">总结提示词：</label>
+                    <textarea id="smart_memory_prompt" rows="3" placeholder="告诉AI如何总结...">请总结最近的对话要点，提取重要信息和情感变化，保持简洁。</textarea>
+                </div>
+                
+                <hr class="sysHR">
+                
+                <!-- 开关设置 -->
+                <div class="setting-item">
+                    <label>
+                        <input type="checkbox" id="smart_memory_enabled" checked />
+                        启用智能总结
+                    </label>
+                </div>
+                
+                <div class="setting-item">
+                    <label>
+                        <input type="checkbox" id="smart_memory_auto_update" checked />
+                        自动更新总结
+                    </label>
+                </div>
+                
+                <div class="setting-item" id="update_interval_container">
+                    <label for="smart_memory_update_interval">更新间隔（每N轮对话）：</label>
+                    <input type="range" id="smart_memory_update_interval" min="1" max="10" step="1" value="1" />
+                    <span id="smart_memory_update_interval_value">1</span>
+                    <small>每完成多少轮对话后自动触发总结（一轮 = 用户+AI）</small>
+                </div>
+                
+                <hr class="sysHR">
+                
+                <!-- 注入内容预览 -->
+                <div class="sub-section">
+                    <h4>注入内容预览（可编辑）</h4>
+                    <div class="setting-item">
+                        <textarea id="smart_memory_injection_content" placeholder="AI总结的内容会显示在这里...">暂无总结内容</textarea>
+                        <small>这些内容会与对话预设一起发送给AI</small>
+                    </div>
+                </div>
+                
+                <!-- 按钮 -->
+                <div class="setting-item button-group">
+                    <button id="test_smart_memory" class="menu_button" style="min-width: 100px; margin-right: 10px;">立即总结</button>
+                    <button id="save_smart_memory_settings" class="menu_button" style="min-width: 100px;">保存设置</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- RPG记忆增强器 -->
+    <div class="inline-drawer">
+        <div class="inline-drawer-header inline-drawer-toggle">
+            <b>RPG模式</b>
+            <div class="inline-drawer-icon fa-solid fa-circle-chevron-down"></div>
+        </div>
+        <div class="inline-drawer-content" style="display: none;">
+            <div class="rpg-container">
+                <div class="rpg-controls" style="display: flex; flex-direction: column; gap: 10px;">
+                    <!-- 悬浮按钮开关 -->
+                    <div class="setting-item" style="margin-bottom: 15px;">
+                        <label>
+                            <input type="checkbox" id="rpg_floating_enabled" checked />
+                            显示RPG悬浮按钮
+                        </label>
+                        <small style="display: block; margin-top: 5px;">关闭后悬浮按钮将隐藏</small>
+                    </div>
+                    
+                    <div style="display: flex; gap: 10px;">
+                        <button id="test_rpg_json" class="menu_button" style="white-space: nowrap;">测试JSON解析</button>
+                    </div>
+                    
+                    <!-- 主角外观选择 -->
+                    <div class="setting-item" style="margin-top: 10px;">
+                        <label for="rpg_player_sprite">主角外观ID：</label>
+                        <select id="rpg_player_sprite" style="width: 200px;">
+                            <optgroup label="基础角色">
+                                <option value="0">剑士 (0)</option>
+                                <option value="1">骑士 (1)</option>
+                                <option value="2">勇者 (2)</option>
+                                <option value="10">魔法师 (10)</option>
+                                <option value="11">巫师 (11)</option>
+                                <option value="12">贤者 (12)</option>
+                                <option value="20">弓箭手 (20)</option>
+                                <option value="21">盗贼 (21)</option>
+                                <option value="22">刺客 (22)</option>
+                            </optgroup>
+                            <optgroup label="平民角色">
+                                <option value="30">村民 (30)</option>
+                                <option value="31">商人 (31)</option>
+                                <option value="32">农民 (32)</option>
+                            </optgroup>
+                            <optgroup label="贵族角色">
+                                <option value="40">国王 (40)</option>
+                                <option value="41">公主 (41)</option>
+                                <option value="42">贵族 (42)</option>
+                            </optgroup>
+                            <optgroup label="神职角色">
+                                <option value="50">牧师 (50)</option>
+                                <option value="51">修女 (51)</option>
+                                <option value="52">圣骑士 (52)</option>
+                            </optgroup>
+                            <optgroup label="特殊角色">
+                                <option value="60">精灵 (60)</option>
+                                <option value="61">兽人 (61)</option>
+                                <option value="62">矮人 (62)</option>
+                                <option value="80">机器人 (80)</option>
+                                <option value="81">赛博人 (81)</option>
+                            </optgroup>
+                        </select>
+                        <button id="apply_player_sprite" class="menu_button" style="margin-left: 10px; white-space: nowrap;">应用</button>
+                    </div>
+                    
+                    <small style="display: block;">游戏会在悬浮窗中打开，点击屏幕控制移动</small>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- RPG游戏窗口会通过JS动态添加到body -->
+
+<!-- 加载Phaser库 -->
+<script src="https://cdn.jsdelivr.net/npm/phaser@3.70.0/dist/phaser.min.js"></script>
+
+<script>
+// RPG游戏代码
+window.RPGMemoryGame = {
+    game: null,
+    scene: null,
+    playerSpriteId: 0,  // 存储玩家选择的精灵ID
+    
+    // 获取玩家精灵ID
+    getPlayerSpriteId: function() {
+        // 直接返回存储的值
+        return this.playerSpriteId || 0;  // 默认使用0号角色
+    },
+    
+    // 设置玩家精灵ID（从外部调用）
+    setPlayerSpriteId: function(id) {
+        this.playerSpriteId = id;
+    },
+    
+    // 更新玩家外观
+    updatePlayerSprite: function(spriteId) {
+        if (this.scene && this.scene.player) {
+            this.scene.player.setFrame(spriteId);
+            console.log('更新玩家外观为ID:', spriteId);
+        }
+    },
+    
+    init: function() {
+        if (this.game) return; // 防止重复初始化
+        
+        const RESOURCE_SERVER = 'https://www.lingxiai.fun';
+        
+        class RPGMemoryScene extends Phaser.Scene {
+            constructor() {
+                super({ key: 'RPGMemoryScene' });
+                this.npcs = [];
+                this.inventory = [];
+                this.dynamicNPCs = {};
+            }
+            
+            preload() {
+                this.load.setBaseURL(RESOURCE_SERVER);
+                this.load.setCORS('anonymous');
+                
+                // 加载tilemap JSON - 使用转换后的地图
+                this.load.tilemapTiledJSON('map', 'maps/phaser_ready_map.json');
+                
+                // 加载tileset图片 - 使用服务器上实际的文件
+                this.load.image('tileset1', 'maps/Interiors_free_16x16.png');
+                this.load.image('tileset2', 'maps/icecream_shop_layer2.png');
+                this.load.image('background', 'maps/icecream_shop_layer1.png');
+                
+                // 加载角色精灵
+                this.load.spritesheet('characters', 'sprites/characters.png', {
+                    frameWidth: 16,  // 正确的宽度
+                    frameHeight: 32  // 正确的高度
+                });
+                
+                this.load.on('loaderror', (file) => {
+                    console.warn('资源加载失败:', file.key);
+                    this.createFallbackSprite(file.key);
+                });
+                
+                // 初始化移动目标
+                this.moveTarget = null;
+            }
+            
+            create() {
+                // 创建tilemap
+                const map = this.make.tilemap({ key: 'map' });
+                
+                // 设置世界边界为地图大小 (不要乘以4)
+                this.physics.world.setBounds(0, 0, map.widthInPixels, map.heightInPixels);
+                
+                // 保存地图引用
+                this.map = map;
+                
+                // 设置相机边界 (不要乘以4，zoom会自动处理)
+                this.cameras.main.setBounds(0, 0, map.widthInPixels, map.heightInPixels);
+                
+                // 渲染背景图像层
+                const imageLayers = map.imageLayers;
+                // 直接添加背景图片
+                const bg = this.add.image(0, 0, 'background').setOrigin(0, 0);
+                
+                // 添加tilesets - name必须匹配，但image使用Phaser加载的key
+                const tileset1 = map.addTilesetImage('1', 'tileset1');
+                const tileset2 = map.addTilesetImage('2', 'tileset2');
+                
+                // 调试输出
+                console.log('Tileset1:', tileset1);
+                console.log('Tileset2:', tileset2);
+                
+                // 创建图块层
+                const layer = map.createLayer('图块层 1', [tileset1, tileset2], 0, 0);
+                if (layer) {
+                    layer.setVisible(true);
+                }
+                
+                // 获取用户设置的主角ID（从扩展设置中读取）
+                const playerSpriteId = window.RPGMemoryGame.getPlayerSpriteId();
+                
+                // 创建玩家 - 使用选择的角色外观
+                this.player = this.physics.add.sprite(96, 80, 'characters', playerSpriteId);
+                this.player.setScale(1);  // 不需要缩放，zoom会处理
+                this.player.setCollideWorldBounds(true);
+                this.player.setDepth(10);
+                
+                // 设置玩家碰撞体 - 更小以便通过窄通道
+                this.player.body.setSize(8, 8);
+                this.player.body.setOffset(4, 4);
+                
+                // 设置相机跟随玩家
+                this.cameras.main.startFollow(this.player);
+                
+                // 创建碰撞系统
+                this.createCollisions();
+                
+                // 创建动画（如果有多帧）
+                // characters.png是一个大的精灵表，包含多个角色
+                // 每个角色占据图片中的一个格子，不是动画帧
+                
+                // 移除键盘控制，只使用点击/触摸移动
+                // this.cursors = this.input.keyboard.createCursorKeys();  // 已禁用
+                
+                // 添加点击/触摸移动功能（手机端支持）
+                this.input.on('pointerdown', (pointer) => {
+                    // 将屏幕坐标转换为游戏世界坐标
+                    const worldPoint = this.cameras.main.getWorldPoint(pointer.x, pointer.y);
+                    
+                    // 设置移动目标
+                    this.moveTarget = {
+                        x: worldPoint.x,
+                        y: worldPoint.y
+                    };
+                    
+                    // 创建点击指示器（可选）
+                    if (this.clickMarker) {
+                        this.clickMarker.destroy();
+                    }
+                    this.clickMarker = this.add.circle(worldPoint.x, worldPoint.y, 3, 0x00ff00, 0.8);
+                    this.clickMarker.setDepth(1);
+                    
+                    // 1秒后移除指示器
+                    this.time.delayedCall(1000, () => {
+                        if (this.clickMarker) {
+                            this.clickMarker.destroy();
+                            this.clickMarker = null;
+                        }
+                    });
+                });
+                
+                // 保存场景引用
+                window.RPGMemoryGame.scene = this;
+                
+                // 触发场景准备完成事件
+                console.log('RPG场景已初始化完成');
+                if (window.RPGMemoryGame.onSceneReady) {
+                    window.RPGMemoryGame.onSceneReady();
+                }
+            }
+            
+            createCollisions() {
+                // 只使用地图边界碰撞，不要内部障碍物
+                const objectLayers = this.map.objects;
+                console.log('查找地图边界...');
+                
+                if (objectLayers && objectLayers.length > 0) {
+                    // 查找事件层
+                    const eventLayer = objectLayers.find(layer => layer.name === '事件层');
+                    if (eventLayer && eventLayer.objects) {
+                        const boundary = eventLayer.objects.find(obj => obj.name === '地图边界');
+                        if (boundary) {
+                            // 设置物理世界边界
+                            this.physics.world.setBounds(
+                                boundary.x,
+                                boundary.y,
+                                boundary.width,
+                                boundary.height
+                            );
+                            console.log('地图边界:', boundary.x, boundary.y, boundary.width, boundary.height);
+                        }
+                    }
+                }
+                
+                // 如果没有找到边界，使用默认地图大小
+                if (!this.physics.world.bounds) {
+                    this.physics.world.setBounds(0, 0, this.map.widthInPixels, this.map.heightInPixels);
+                    console.log('使用默认地图边界');
+                }
+                
+                // 设置玩家碰撞世界边界
+                if (this.player) {
+                    this.player.setCollideWorldBounds(true);
+                }
+            }
+            
+            createFallbackSprite(key) {
+                // 如果资源加载失败，创建备用精灵
+                console.log('创建备用精灵:', key);
+                if (!this.textures.exists(key)) {
+                    const graphics = this.make.graphics();
+                    const color = 0x888888;
+                    graphics.fillStyle(color);
+                    
+                    if (key === 'characters') {
+                        graphics.fillRect(0, 0, 16, 32);
+                        graphics.generateTexture(key, 16, 32);
+                    } else {
+                        graphics.fillRect(0, 0, 16, 16);
+                        graphics.generateTexture(key, 16, 16);
+                    }
+                    graphics.destroy();
+                }
+            }
+            
+            updateFromJSON(rpgData) {
+                console.log('RPG数据更新:', rpgData);
+                
+                // 处理主角数据
+                if (rpgData.player) {
+                    this.updatePlayerDialogue(rpgData.player);
+                }
+                
+                // 更新NPC - 过滤掉主角
+                if (rpgData.npcs && Array.isArray(rpgData.npcs)) {
+                    // 获取当前角色名（从全局获取）
+                    let playerName = "主角";
+                    try {
+                        // 尝试从getContext获取
+                        if (window.parent && window.parent.getContext) {
+                            const context = window.parent.getContext();
+                            playerName = context?.name2 || context?.name || "主角";
+                        }
+                    } catch (e) {
+                        console.log('无法获取主角名称，使用默认值');
+                    }
+                    
+                    // 主角别名列表
+                    const 主角别名 = ['主角', '玩家', '你', 'player', 'you', playerName];
+                    
+                    // 过滤掉名字与主角相同的NPC（包括包含主角关键词的）
+                    const filteredNPCs = rpgData.npcs.filter(npc => {
+                        // 检查是否包含主角关键词
+                        const isPlayer = 主角别名.some(alias => {
+                            if (!npc.name) return false;
+                            const nameLower = npc.name.toLowerCase();
+                            const aliasLower = alias.toLowerCase();
+                            // 完全匹配或包含主角关键词（如"主角(xxx)"）
+                            return nameLower === aliasLower || 
+                                   nameLower.includes(aliasLower + '(') || 
+                                   nameLower.startsWith(aliasLower);
+                        });
+                        return !isPlayer;
+                    });
+                    
+                    console.log(`更新${filteredNPCs.length}个NPC（过滤掉主角）`);
+                    // 清除旧NPC
+                    Object.values(this.dynamicNPCs).forEach(npc => {
+                        if (npc.sprite) npc.sprite.destroy();
+                        if (npc.nameText) npc.nameText.destroy();
+                    });
+                    this.dynamicNPCs = {};
+                    
+                    // 添加新NPC
+                    filteredNPCs.forEach(npcData => {
+                        this.addDynamicNPC(npcData);
+                    });
+                    
+                    // 检查是否有主角数据（在过滤掉的NPC中查找）
+                    const playerNPC = rpgData.npcs.find(npc => {
+                        if (!npc.name) return false;
+                        const nameLower = npc.name.toLowerCase();
+                        return 主角别名.some(alias => {
+                            const aliasLower = alias.toLowerCase();
+                            // 完全匹配或包含主角关键词（如"主角(xxx)"）
+                            return nameLower === aliasLower || 
+                                   nameLower.includes(aliasLower + '(') || 
+                                   nameLower.startsWith(aliasLower);
+                        });
+                    });
+                    
+                    if (playerNPC && !rpgData.player) {
+                        // 如果找到主角NPC但没有player数据，将其转换为player
+                        this.updatePlayerDialogue(playerNPC);
+                    }
+                }
+                
+                // 更新背包
+                if (rpgData.inventory) {
+                    this.updateInventory(rpgData.inventory);
+                }
+                
+                // 更新事件
+                if (rpgData.events) {
+                    this.updateEvents(rpgData.events);
+                }
+            }
+            
+            addDynamicNPC(npcData) {
+                if (this.dynamicNPCs[npcData.id]) {
+                    const existingNPC = this.dynamicNPCs[npcData.id];
+                    existingNPC.data = npcData;
+                    if (existingNPC.nameText) {
+                        existingNPC.nameText.setText(npcData.name || '???');
+                    }
+                    return;
+                }
+                
+                // 直接使用spriteId作为帧索引
+                const spriteId = npcData.spriteId || 0;
+                const npcSprite = this.physics.add.sprite(
+                    npcData.x || Phaser.Math.Between(50, 150),
+                    npcData.y || Phaser.Math.Between(50, 120),
+                    'characters',
+                    spriteId  // 直接使用spriteId选择角色
+                );
+                
+                npcSprite.setScale(1);  // 不需要缩放
+                npcSprite.setDepth(5);
+                
+                // 设置NPC碰撞体和边界
+                npcSprite.setCollideWorldBounds(true);
+                npcSprite.body.setSize(8, 8);
+                npcSprite.body.setOffset(4, 4);
+                
+                // 初始化随机移动
+                npcSprite.moveTimer = 0;
+                npcSprite.moveDirection = { x: 0, y: 0 };
+                npcSprite.nextMoveChange = Phaser.Math.Between(1000, 3000);
+                
+                const nameText = this.add.text(
+                    npcSprite.x,
+                    npcSprite.y - 25,
+                    npcData.name || '???',
+                    {
+                        fontSize: '12px',
+                        fill: '#ffffff',
+                        backgroundColor: '#000000',
+                        padding: { x: 2, y: 1 }
+                    }
+                );
+                nameText.setOrigin(0.5);
+                nameText.setDepth(15);
+                
+                npcSprite.setInteractive();
+                npcSprite.on('pointerdown', () => {
+                    this.showDialogue(npcData);
+                });
+                
+                this.dynamicNPCs[npcData.id] = {
+                    sprite: npcSprite,
+                    nameText: nameText,
+                    data: npcData
+                };
+            }
+            
+            showDialogue(npcData) {
+                // 计算对话框高度（根据文字长度自适应）
+                const dialogue = npcData.dialogue || '...';
+                const maxWidth = 170;
+                const fontSize = 9;
+                const lineHeight = fontSize * 1.5;
+                
+                // 估算文本行数
+                const charsPerLine = Math.floor(maxWidth / (fontSize * 0.6));
+                const estimatedLines = Math.ceil(dialogue.length / charsPerLine) + 1; // +1为名字行
+                const dialogHeight = Math.min(Math.max(45, estimatedLines * lineHeight + 10), 100); // 最大100像素
+                
+                // 创建动态高度的对话框
+                const dialogBg = this.add.rectangle(96, 120, 180, dialogHeight, 0x000000, 0.95);
+                dialogBg.setDepth(20);
+                dialogBg.setStrokeStyle(2, 0xffffff);  // 白色边框
+                
+                const emotion = npcData.emotion === 'happy' ? '😊' : 
+                               npcData.emotion === 'sad' ? '😢' : 
+                               npcData.emotion === 'angry' ? '😠' : '😐';
+                
+                // 如果文字太长，截断并添加省略号
+                let displayText = dialogue;
+                const maxChars = 120; // 最大字符数
+                if (dialogue.length > maxChars) {
+                    displayText = dialogue.substring(0, maxChars) + '...';
+                }
+                
+                // NPC对话框字体
+                const dialogText = this.add.text(96, 120,
+                    `${npcData.name} ${emotion}\n${displayText}`,
+                    {
+                        fontSize: `${fontSize}px`,
+                        fill: '#ffffff',
+                        stroke: '#000000',  // 黑色描边
+                        strokeThickness: 1.5,
+                        wordWrap: { width: maxWidth },
+                        align: 'center',
+                        fontFamily: 'Arial, sans-serif'
+                    }
+                );
+                dialogText.setOrigin(0.5);
+                dialogText.setDepth(21);
+                
+                // 根据文字长度调整显示时间
+                const displayTime = Math.min(3000 + dialogue.length * 30, 6000); // 最多6秒
+                
+                this.time.delayedCall(displayTime, () => {
+                    dialogBg.destroy();
+                    dialogText.destroy();
+                });
+            }
+            
+            updateInventory(inventory) {
+                const inventoryList = document.getElementById('rpg-inventory-list');
+                if (inventoryList) {
+                    inventoryList.innerHTML = '';
+                    inventory.forEach(item => {
+                        const itemDiv = document.createElement('div');
+                        itemDiv.className = 'rpg-inventory-item';
+                        itemDiv.textContent = `${item.name} x${item.quantity || 1}`;
+                        inventoryList.appendChild(itemDiv);
+                    });
+                }
+            }
+            
+            updateEvents(events) {
+                const eventText = document.getElementById('rpg-event-text');
+                if (eventText) {
+                    let text = '';
+                    if (events.current) {
+                        text += `当前: ${events.current}\n`;
+                    }
+                    if (events.permanent) {
+                        text += `永久记忆: ${events.permanent}`;
+                    }
+                    eventText.textContent = text || '等待事件更新...';
+                }
+            }
+            
+            updatePlayerDialogue(playerData) {
+                const playerText = document.getElementById('rpg-player-text');
+                if (playerText && playerData) {
+                    const emotion = playerData.emotion === 'happy' ? '😊' : 
+                                  playerData.emotion === 'sad' ? '😢' : 
+                                  playerData.emotion === 'angry' ? '😠' : '😐';
+                    
+                    const dialogue = playerData.dialogue || '等待主角说话...';
+                    const status = playerData.status || '';
+                    
+                    // 显示主角台词和状态
+                    let displayText = `${emotion} ${dialogue}`;
+                    if (status) {
+                        displayText += `\n[状态: ${status}]`;
+                    }
+                    playerText.textContent = displayText;
+                    
+                    console.log(`更新主角台词: ${dialogue}`);
+                    if (status) {
+                        console.log(`主角状态: ${status}`);
+                    }
+                }
+            }
+            
+            update() {
+                if (!this.player) return;
+                
+                const speed = 100;  // 使用正常的物理速度
+                let velocityX = 0;
+                let velocityY = 0;
+                
+                // 检查点击/触摸移动
+                if (this.moveTarget) {
+                    const distance = Phaser.Math.Distance.Between(
+                        this.player.x, this.player.y,
+                        this.moveTarget.x, this.moveTarget.y
+                    );
+                    
+                    if (distance > 5) {  // 如果距离目标超过5像素
+                        // 计算移动方向
+                        const angle = Phaser.Math.Angle.Between(
+                            this.player.x, this.player.y,
+                            this.moveTarget.x, this.moveTarget.y
+                        );
+                        
+                        velocityX = Math.cos(angle) * speed;
+                        velocityY = Math.sin(angle) * speed;
+                        
+                        // 更新朝向
+                        this.player.setFlipX(velocityX < 0);
+                    } else {
+                        // 到达目标，停止移动
+                        this.moveTarget = null;
+                    }
+                }
+                
+                // 键盘控制已移除，避免与系统功能冲突
+                // 只使用点击/触摸移动
+                
+                // 应用速度
+                this.player.setVelocityX(velocityX);
+                this.player.setVelocityY(velocityY);
+                
+                // 不需要动画，因为characters.png是静态角色集合
+                
+                // 更新NPC名字位置和随机移动
+                Object.values(this.dynamicNPCs).forEach(npc => {
+                    if (npc.sprite) {
+                        // 更新名字位置
+                        if (npc.nameText) {
+                            npc.nameText.x = npc.sprite.x;
+                            npc.nameText.y = npc.sprite.y - 25;
+                        }
+                        
+                        // NPC随机移动
+                        npc.sprite.moveTimer += 16; // 约16ms一帧
+                        
+                        if (npc.sprite.moveTimer >= npc.sprite.nextMoveChange) {
+                            // 改变移动方向
+                            npc.sprite.moveTimer = 0;
+                            npc.sprite.nextMoveChange = Phaser.Math.Between(1000, 3000);
+                            
+                            // 随机选择新方向或停止
+                            const choice = Phaser.Math.Between(0, 4);
+                            switch(choice) {
+                                case 0: // 停止
+                                    npc.sprite.moveDirection = { x: 0, y: 0 };
+                                    break;
+                                case 1: // 向左
+                                    npc.sprite.moveDirection = { x: -1, y: 0 };
+                                    npc.sprite.setFlipX(true);
+                                    break;
+                                case 2: // 向右
+                                    npc.sprite.moveDirection = { x: 1, y: 0 };
+                                    npc.sprite.setFlipX(false);
+                                    break;
+                                case 3: // 向上
+                                    npc.sprite.moveDirection = { x: 0, y: -1 };
+                                    break;
+                                case 4: // 向下
+                                    npc.sprite.moveDirection = { x: 0, y: 1 };
+                                    break;
+                            }
+                        }
+                        
+                        // 应用移动速度（比玩家慢）
+                        const npcSpeed = 30;
+                        npc.sprite.setVelocityX(npc.sprite.moveDirection.x * npcSpeed);
+                        npc.sprite.setVelocityY(npc.sprite.moveDirection.y * npcSpeed);
+                        
+                        // 检测与玩家的碰撞（避免重叠）
+                        if (this.player) {
+                            const distance = Phaser.Math.Distance.Between(
+                                npc.sprite.x, npc.sprite.y,
+                                this.player.x, this.player.y
+                            );
+                            
+                            // 如果太近，推开NPC
+                            if (distance < 20) {
+                                const angle = Phaser.Math.Angle.Between(
+                                    this.player.x, this.player.y,
+                                    npc.sprite.x, npc.sprite.y
+                                );
+                                npc.sprite.x += Math.cos(angle) * 2;
+                                npc.sprite.y += Math.sin(angle) * 2;
+                            }
+                        }
+                    }
+                });
+            }
+        }
+        
+        // 游戏配置 - 按照规范使用zoom缩放
+        const config = {
+            type: Phaser.CANVAS,
+            width: 192,  // 地图实际宽度: 12格 × 16像素
+            height: 160,  // 地图实际高度: 10格 × 16像素
+            parent: 'rpg-game-container',
+            canvas: document.getElementById('rpg-canvas'),
+            pixelArt: true,  // 像素完美渲染
+            zoom: 4,  // 4倍缩放显示 (最终显示768×640)
+            physics: {
+                default: 'arcade',
+                arcade: {
+                    gravity: { y: 0 },
+                    debug: false
+                }
+            },
+            scene: [RPGMemoryScene]
+        };
+        
+        this.game = new Phaser.Game(config);
+    },
+    
+    updateRPG: function(rpgData) {
+        console.log('RPGMemoryGame.updateRPG被调用:', rpgData);
+        if (this.scene) {
+            this.scene.updateFromJSON(rpgData);
+        } else {
+            console.log('场景未初始化，缓存数据等待场景就绪');
+            // 缓存数据，等场景准备好后再更新
+            this.pendingData = rpgData;
+        }
+    },
+    
+    // 场景准备完成的回调
+    onSceneReady: function() {
+        if (this.pendingData) {
+            console.log('场景已就绪，应用缓存的RPG数据');
+            this.scene.updateFromJSON(this.pendingData);
+            this.pendingData = null;
+        }
+    },
+    
+    destroy: function() {
+        if (this.game) {
+            this.game.destroy(true);
+            this.game = null;
+            this.scene = null;
+        }
+    }
+};
+</script>
