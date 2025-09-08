@@ -316,27 +316,34 @@
     animation: pulse 2s infinite;
 }
 
+/* 强制显示悬浮按钮 - 最高优先级 */
+body #rpg-floating-button,
+#rpg-floating-button,
+div#rpg-floating-button {
+    display: flex !important;
+    visibility: visible !important;
+    opacity: 0.9 !important;
+    position: fixed !important;
+    z-index: 2147483647 !important; /* 最大的z-index值 */
+}
+
+/* 确保按钮在所有设备上都显示 */
+@media all {
+    #rpg-floating-button {
+        display: flex !important;
+        visibility: visible !important;
+    }
+}
+
 /* 手机适配 - 小屏幕 */
 @media (max-width: 480px) {
     /* 针对竖屏手机的特殊处理 */
     #rpg-floating-button {
-        /* 位置固定在屏幕可视区域内 */
-        position: fixed !important;
-        bottom: 70px !important;   /* 在输入框上方 */
-        right: 10px !important;    /* 靠右边 */
-        left: auto !important;     /* 取消左边定位 */
-        transform: none !important; /* 取消变换 */
-        
-        /* 按钮样式 */
+        /* 简化位置设置，避免冲突 */
+        bottom: 70px !important;
+        right: 10px !important;
         width: 50px !important;
         height: 50px !important;
-        z-index: 999999 !important;
-        display: flex !important;
-        opacity: 0.9 !important;
-        visibility: visible !important;
-        
-        /* 脉冲动画吸引注意 */
-        animation: pulse 3s infinite !important;
     }
     
     /* RPG画布手机适配 */
