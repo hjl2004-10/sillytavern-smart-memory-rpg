@@ -674,7 +674,7 @@ window.RPGMemoryGame = {
                     displayText = dialogue.substring(0, maxChars) + '...';
                 }
                 
-                // NPC对话框字体
+                // NPC对话框字体 - 使用清晰的系统字体
                 const dialogText = this.add.text(96, 120,
                     `${npcData.name} ${emotion}\n${displayText}`,
                     {
@@ -684,7 +684,8 @@ window.RPGMemoryGame = {
                         strokeThickness: 1.5,
                         wordWrap: { width: maxWidth },
                         align: 'center',
-                        fontFamily: 'Arial, sans-serif'
+                        fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Microsoft YaHei", "微软雅黑", sans-serif',
+                        resolution: 2  // 提高文字分辨率
                     }
                 );
                 dialogText.setOrigin(0.5);
@@ -865,8 +866,13 @@ window.RPGMemoryGame = {
             height: 160,  // 地图实际高度: 10格 × 16像素
             parent: 'rpg-game-container',
             canvas: document.getElementById('rpg-canvas'),
-            pixelArt: true,  // 像素完美渲染
+            pixelArt: false,  // 关闭像素化，让文字清晰
             zoom: 4,  // 4倍缩放显示 (最终显示768×640)
+            render: {
+                antialias: true,  // 开启抗锯齿
+                pixelArt: false,  // 确保关闭像素艺术模式
+                roundPixels: false  // 不强制整数像素
+            },
             physics: {
                 default: 'arcade',
                 arcade: {
