@@ -591,7 +591,7 @@ async function getModelsList() {
   
   try {
     console.log("正在获取模型列表...");
-    $("#model_status").text("正在获取模型列表...");
+    $("#model_status_rpg").text("正在获取模型列表...");
     
     const response = await fetch(`${apiUrl}/models`, {
       method: 'GET',
@@ -613,7 +613,7 @@ async function getModelsList() {
     
     if (models.length === 0) {
       modelSelect.append('<option value="">未找到可用模型</option>');
-      $("#model_status").text("未找到可用模型");
+      $("#model_status_rpg").text("未找到可用模型");
     } else {
       // 过滤出聊天模型
       const chatModels = models.filter(m => {
@@ -629,14 +629,14 @@ async function getModelsList() {
           const modelId = model.id || model.model || model.name;
           modelSelect.append(`<option value="${modelId}">${modelId}</option>`);
         });
-        $("#model_status").text(`找到 ${chatModels.length} 个可用模型`);
+        $("#model_status_rpg").text(`找到 ${chatModels.length} 个可用模型`);
       } else {
         // 如果没有过滤到聊天模型，显示所有模型
         models.forEach(model => {
           const modelId = model.id || model.model || model.name;
           modelSelect.append(`<option value="${modelId}">${modelId}</option>`);
         });
-        $("#model_status").text(`找到 ${models.length} 个模型`);
+        $("#model_status_rpg").text(`找到 ${models.length} 个模型`);
       }
       
       // 如果之前有保存的模型，尝试选中
@@ -654,7 +654,7 @@ async function getModelsList() {
     
   } catch (error) {
     console.error("获取模型列表失败:", error);
-    $("#model_status").text("获取失败");
+    $("#model_status_rpg").text("获取失败");
     
     // 如果获取失败，提供一些常用模型作为备选
     const modelSelect = $("#smart_memory_rpg_model");
