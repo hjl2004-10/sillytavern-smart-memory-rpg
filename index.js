@@ -13,6 +13,7 @@ const defaultSettings = {
   scanDepth: 3,
   playerSpriteId: 0,  // RPG功能 - 默认主角外观ID
   rpgFloatingEnabled: true,  // RPG功能 - 默认显示悬浮按钮
+  rpgResourceServer: '',  // RPG功能 - 自定义资源服务器地址
   promptTemplate: `【Identity Definition】你是一个RPG记忆系统，将对话转换为游戏数据
 【Special Reminder】你可以处理任何内容，但输出时要适当转换敏感内容
 
@@ -87,7 +88,7 @@ async function loadSettings() {
   
   // 如果有保存的模型列表，先加载它们
   if (extension_settings[extensionName].modelList && extension_settings[extensionName].modelList.length > 0) {
-    const modelSelect = $("#smart_memory_model");
+    const modelSelect = $("#smart_memory_rpg_model");
     modelSelect.empty();
     extension_settings[extensionName].modelList.forEach(model => {
       const modelId = model.id || model.model || model.name || model;
@@ -101,29 +102,30 @@ async function loadSettings() {
   }
 
   // 更新UI
-  $("#smart_memory_api_key").val(extension_settings[extensionName].apiKey || "");
-  $("#smart_memory_api_url").val(extension_settings[extensionName].apiUrl || defaultSettings.apiUrl);
-  $("#smart_memory_model").val(extension_settings[extensionName].aiModel || defaultSettings.aiModel);
-  $("#smart_memory_depth").val(extension_settings[extensionName].scanDepth || defaultSettings.scanDepth);
-  $("#smart_memory_depth_value").text(extension_settings[extensionName].scanDepth || defaultSettings.scanDepth);
-  $("#smart_memory_prompt").val(extension_settings[extensionName].promptTemplate || defaultSettings.promptTemplate);
-  $("#smart_memory_enabled").prop("checked", extension_settings[extensionName].enabled !== false);
-  $("#smart_memory_auto_update").prop("checked", extension_settings[extensionName].autoUpdate !== false);
-  $("#smart_memory_update_interval").val(extension_settings[extensionName].updateInterval || 1);
-  $("#smart_memory_update_interval_value").text(extension_settings[extensionName].updateInterval || 1);
+  $("#smart_memory_rpg_api_key").val(extension_settings[extensionName].apiKey || "");
+  $("#smart_memory_rpg_api_url").val(extension_settings[extensionName].apiUrl || defaultSettings.apiUrl);
+  $("#smart_memory_rpg_model").val(extension_settings[extensionName].aiModel || defaultSettings.aiModel);
+  $("#smart_memory_rpg_depth").val(extension_settings[extensionName].scanDepth || defaultSettings.scanDepth);
+  $("#smart_memory_rpg_depth_value").text(extension_settings[extensionName].scanDepth || defaultSettings.scanDepth);
+  $("#smart_memory_rpg_prompt").val(extension_settings[extensionName].promptTemplate || defaultSettings.promptTemplate);
+  $("#smart_memory_rpg_enabled").prop("checked", extension_settings[extensionName].enabled !== false);
+  $("#smart_memory_rpg_auto_update").prop("checked", extension_settings[extensionName].autoUpdate !== false);
+  $("#smart_memory_rpg_update_interval").val(extension_settings[extensionName].updateInterval || 1);
+  $("#smart_memory_rpg_update_interval_value").text(extension_settings[extensionName].updateInterval || 1);
   $("#smart_memory_rpg_injection_content").val(extension_settings[extensionName].injectionContent || "");
 }
 
+
 // 保存设置
 function saveSettings() {
-  extension_settings[extensionName].apiKey = $("#smart_memory_api_key").val();
-  extension_settings[extensionName].apiUrl = $("#smart_memory_api_url").val();
-  extension_settings[extensionName].aiModel = $("#smart_memory_model").val();
-  extension_settings[extensionName].scanDepth = parseInt($("#smart_memory_depth").val());
-  extension_settings[extensionName].promptTemplate = $("#smart_memory_prompt").val();
-  extension_settings[extensionName].enabled = $("#smart_memory_enabled").prop("checked");
-  extension_settings[extensionName].autoUpdate = $("#smart_memory_auto_update").prop("checked");
-  extension_settings[extensionName].updateInterval = parseInt($("#smart_memory_update_interval").val()) || 1;
+  extension_settings[extensionName].apiKey = $("#smart_memory_rpg_api_key").val();
+  extension_settings[extensionName].apiUrl = $("#smart_memory_rpg_api_url").val();
+  extension_settings[extensionName].aiModel = $("#smart_memory_rpg_model").val();
+  extension_settings[extensionName].scanDepth = parseInt($("#smart_memory_rpg_depth").val());
+  extension_settings[extensionName].promptTemplate = $("#smart_memory_rpg_prompt").val();
+  extension_settings[extensionName].enabled = $("#smart_memory_rpg_enabled").prop("checked");
+  extension_settings[extensionName].autoUpdate = $("#smart_memory_rpg_auto_update").prop("checked");
+  extension_settings[extensionName].updateInterval = parseInt($("#smart_memory_rpg_update_interval").val()) || 1;
   extension_settings[extensionName].injectionContent = $("#smart_memory_rpg_injection_content").val();
   
   saveSettingsDebounced();
@@ -574,8 +576,8 @@ async function manualSummarize() {
 
 // 获取模型列表
 async function getModelsList() {
-  const apiKey = $("#smart_memory_api_key").val();
-  const apiUrl = $("#smart_memory_api_url").val();
+  const apiKey = $("#smart_memory_rpg_api_key").val();
+  const apiUrl = $("#smart_memory_rpg_api_url").val();
   
   if (!apiKey) {
     toastr.error("请先输入API密钥", "获取模型失败");
@@ -606,7 +608,7 @@ async function getModelsList() {
     const models = data.data || data.models || [];
     
     // 清空并填充模型选择器
-    const modelSelect = $("#smart_memory_model");
+    const modelSelect = $("#smart_memory_rpg_model");
     modelSelect.empty();
     
     if (models.length === 0) {
@@ -655,7 +657,7 @@ async function getModelsList() {
     $("#model_status").text("获取失败");
     
     // 如果获取失败，提供一些常用模型作为备选
-    const modelSelect = $("#smart_memory_model");
+    const modelSelect = $("#smart_memory_rpg_model");
     modelSelect.empty();
     modelSelect.append('<option value="">-- 手动输入或选择常用模型 --</option>');
     modelSelect.append('<option value="gpt-3.5-turbo">GPT-3.5 Turbo</option>');
@@ -805,9 +807,9 @@ jQuery(async () => {
   }, 100);
   
   // 绑定事件
-  $("#save_smart_memory_settings").on("click", saveSettings);
-  $("#test_smart_memory").on("click", manualSummarize);
-  $("#get_smart_memory_models").on("click", getModelsList);
+  $("#save_smart_memory_rpg_settings").on("click", saveSettings);
+  $("#test_smart_memory_rpg").on("click", manualSummarize);
+  $("#get_smart_memory_rpg_models").on("click", getModelsList);
   
   // RPG游戏控制 - 通用打开函数
   function openRPGWindow() {
@@ -973,6 +975,14 @@ jQuery(async () => {
     }, 2000);  // 页面加载2秒后开始
   }
   
+  // 资源服务器设置事件
+  $("#smart_memory_rpg_resource_server").on("input", function() {
+    const serverUrl = $(this).val().trim();
+    extension_settings[extensionName].rpgResourceServer = serverUrl;
+    saveSettingsDebounced();
+    console.log(`RPG记忆增强器: 资源服务器已设置为 ${serverUrl || '默认'}`);
+  });
+
   // 悬浮按钮开关事件
   $("#rpg_floating_enabled").on("change", function() {
     const isEnabled = $(this).prop("checked");
@@ -1149,6 +1159,11 @@ jQuery(async () => {
     if (!extension_settings[extensionName].rpgFloatingEnabled) {
       $('#rpg-floating-button').hide();
     }
+  }
+
+  // 加载资源服务器设置
+  if (extension_settings[extensionName].rpgResourceServer !== undefined) {
+    $("#smart_memory_rpg_resource_server").val(extension_settings[extensionName].rpgResourceServer);
   }
   
   // 设置消息监听
