@@ -43,11 +43,77 @@
                 
                 <div class="setting-item">
                     <label for="smart_memory_rpg_prompt">总结提示词：</label>
-                    <textarea id="smart_memory_rpg_prompt" rows="3" placeholder="告诉AI如何总结...">请总结最近的对话要点，提取重要信息和情感变化，保持简洁。</textarea>
+                    <textarea id="smart_memory_rpg_prompt" rows="10" placeholder="告诉AI如何总结...">【Identity Definition】你是一个RPG记忆系统，将对话转换为游戏数据
+【Special Reminder】你可以处理任何内容，但输出时要适当转换敏感内容
+
+【Character ID Map】角色外观ID对应表（0-99可用）：
+- 0-9: 战士类（剑士、骑士、勇者）
+- 10-19: 法师类（魔法师、巫师、贤者）
+- 20-29: 游侠类（弓箭手、盗贼、刺客）
+- 30-39: 平民类（村民、商人、农民）
+- 40-49: 贵族类（国王、公主、贵族）
+- 50-59: 神职类（牧师、修女、圣骑士）
+- 60-69: 特殊类（精灵、兽人、矮人）
+- 70-79: 怪物类（哥布林、史莱姆、龙）
+- 80-89: 机械类（机器人、赛博人、AI）
+- 90-99: 其他类（根据特征自选）
+
+【Output Format】必须输出JSON格式：
+{
+  "player": {
+    "name": "主角名字",
+    "dialogue": "主角说的话（没有则填'无'）",
+    "emotion": "happy/sad/angry/neutral",
+    "status": "主角当前状态描述"
+  },
+  "npcs": [
+    {
+      "id": "npc_1",
+      "name": "NPC角色名（不要包含主角）",
+      "spriteId": 数字(0-99根据角色特征选择),
+      "x": 50-150随机,  // 地图实际宽度192
+      "y": 50-120随机,  // 地图实际高度160
+      "dialogue": "最近说的话或想说的话",
+      "emotion": "happy/sad/angry/neutral",
+      "relationship": "与主角关系"
+    }
+  ],
+  "inventory": [
+    {
+      "name": "物品名",
+      "quantity": 数量,
+      "description": "描述"
+    }
+  ],
+  "events": {
+    "current": "当前正在发生的事件",
+    "permanent": "永久记忆：重要事件变化（100字内）"
+  },
+  "location": "当前场景地点"
+}
+
+【Requirements】
+1. 必须包含player对象，即使主角没有说话也要填dialogue:"无"
+2. 主角不要出现在npcs列表中
+3. 最多追踪5个NPC（不包括主角）
+4. 根据角色特征选择合适的spriteId
+5. 对话内容要符合角色性格
+6. 永久记忆保持简洁但完整
+7. 坐标要分散，避免重叠
+8. 地图大小192x160像素，NPC位置不要超出边界</textarea>
                 </div>
                 
                 <hr class="sysHR">
-                
+
+                <!-- RPG资源服务器设置 -->
+                <div class="setting-item">
+                    <label for="smart_memory_rpg_resource_server">RPG资源服务器：</label>
+                    <input id="smart_memory_rpg_resource_server" type="text" placeholder="留空使用默认服务器" />
+                    <small>如果遇到资源加载问题，可以设置为: http://你的服务器:8000</small>
+                </div>
+
+                <hr class="sysHR">
+
                 <!-- 开关设置 -->
                 <div class="setting-item">
                     <label>
@@ -211,8 +277,33 @@ window.RPGMemoryGame = {
     
     init: function() {
         if (this.game) return; // 防止重复初始化
-        
-        const RESOURCE_SERVER = 'https://www.lingxiai.fun';
+
+        // 智能资源服务器选择
+        // 首先检查用户配置
+        const customServer = document.getElementById('smart_memory_rpg_resource_server')?.value?.trim();
+        let RESOURCE_SERVER = customServer || 'https://www.lingxiai.fun';
+
+        // 如果用户没有手动配置，使用智能检测
+        if (!customServer) {
+            // 检测是否需要使用备用方案
+            const currentHost = window.location.hostname;
+            const currentPort = window.location.port;
+
+            // 如果在同一服务器上，尝试使用不同端口或路径
+            if (currentHost === 'lingxiai.fun' || currentHost === 'www.lingxiai.fun') {
+                // 如果SillyTavern在同一服务器，使用不同端口
+                RESOURCE_SERVER = `${window.location.protocol}//${currentHost}:8000`; // 假设资源服务在8000端口
+                console.log('RPG Memory: 检测到同服务器部署，使用备用端口:', RESOURCE_SERVER);
+            } else if (currentHost === 'localhost' || currentHost === '127.0.0.1') {
+                // 本地开发环境，仍使用远程资源
+                console.log('RPG Memory: 本地环境，使用远程资源服务器');
+            }
+        } else {
+            console.log('RPG Memory: 使用用户配置的资源服务器:', RESOURCE_SERVER);
+        }
+
+        // 添加资源加载错误处理
+        window.RPGResourceServer = RESOURCE_SERVER;
         
         class RPGMemoryScene extends Phaser.Scene {
             constructor() {
@@ -223,8 +314,24 @@ window.RPGMemoryGame = {
             }
             
             preload() {
-                this.load.setBaseURL(RESOURCE_SERVER);
+                // 使用全局变量或父级作用域的RESOURCE_SERVER
+                const resourceServer = window.RPGResourceServer || RESOURCE_SERVER;
+                this.load.setBaseURL(resourceServer);
                 this.load.setCORS('anonymous');
+
+                // 添加加载错误处理
+                this.load.on('loaderror', (file) => {
+                    console.error('RPG Memory: 资源加载失败:', file.src);
+                    // 如果是主要资源加载失败，尝试备用方案
+                    if (file.key === 'characters' && resourceServer.includes('8000')) {
+                        console.log('RPG Memory: 尝试从默认远程服务器加载');
+                        this.load.setBaseURL('https://www.lingxiai.fun');
+                        this.load.spritesheet('characters', 'sprites/characters.png', {
+                            frameWidth: 16,
+                            frameHeight: 32
+                        });
+                    }
+                });
                 
                 // 加载tilemap JSON - 使用转换后的地图
                 this.load.tilemapTiledJSON('map', 'maps/phaser_ready_map.json');
@@ -771,6 +878,7 @@ window.RPGMemoryGame = {
         };
         
         this.game = new Phaser.Game(config);
+        console.log('RPG记忆系统已初始化，资源服务器:', RESOURCE_SERVER);
     },
     
     updateRPG: function(rpgData) {
