@@ -647,56 +647,59 @@ window.RPGMemoryGame = {
             }
             
             showDialogue(npcData) {
-                // 计算对话框高度（根据文字长度自适应）
                 const dialogue = npcData.dialogue || '...';
                 const maxWidth = 170;
-                const fontSize = 9;
-                const lineHeight = fontSize * 1.5;
-                
-                // 估算文本行数
-                const charsPerLine = Math.floor(maxWidth / (fontSize * 0.6));
-                const estimatedLines = Math.ceil(dialogue.length / charsPerLine) + 1; // +1为名字行
-                const dialogHeight = Math.min(Math.max(45, estimatedLines * lineHeight + 10), 100); // 最大100像素
-                
-                // 创建动态高度的对话框
+                const dialogHeight = 60;
+
+                // 创建Phaser背景框（保留像素化背景）
                 const dialogBg = this.add.rectangle(96, 120, 180, dialogHeight, 0x000000, 0.95);
                 dialogBg.setDepth(20);
-                dialogBg.setStrokeStyle(2, 0xffffff);  // 白色边框
-                
-                const emotion = npcData.emotion === 'happy' ? '😊' : 
-                               npcData.emotion === 'sad' ? '😢' : 
+                dialogBg.setStrokeStyle(2, 0xffffff);
+
+                // 创建HTML对话框显示清晰文字
+                const emotion = npcData.emotion === 'happy' ? '😊' :
+                               npcData.emotion === 'sad' ? '😢' :
                                npcData.emotion === 'angry' ? '😠' : '😐';
-                
-                // 如果文字太长，截断并添加省略号
+
                 let displayText = dialogue;
-                const maxChars = 120; // 最大字符数
+                const maxChars = 120;
                 if (dialogue.length > maxChars) {
                     displayText = dialogue.substring(0, maxChars) + '...';
                 }
-                
-                // NPC对话框文字
-                const dialogText = this.add.text(96, 120,
-                    `${npcData.name} ${emotion}\n${displayText}`,
-                    {
-                        fontSize: `${fontSize}px`,
-                        fill: '#ffffff',
-                        stroke: '#000000',  // 黑色描边
-                        strokeThickness: 1.5,
-                        wordWrap: { width: maxWidth },
-                        align: 'center',
-                        fontFamily: 'Arial, sans-serif'  // 使用简单的字体
+
+                // 创建HTML元素
+                const gameContainer = document.getElementById('rpg-game-container');
+                if (gameContainer) {
+                    // 获取或创建覆盖层
+                    let overlay = gameContainer.querySelector('.rpg-dialogue-overlay');
+                    if (!overlay) {
+                        overlay = document.createElement('div');
+                        overlay.className = 'rpg-dialogue-overlay';
+                        gameContainer.appendChild(overlay);
                     }
-                );
-                dialogText.setOrigin(0.5);
-                dialogText.setDepth(21);
-                
-                // 根据文字长度调整显示时间
-                const displayTime = Math.min(3000 + dialogue.length * 30, 6000); // 最多6秒
-                
-                this.time.delayedCall(displayTime, () => {
-                    dialogBg.destroy();
-                    dialogText.destroy();
-                });
+
+                    // 创建对话气泡
+                    const bubble = document.createElement('div');
+                    bubble.className = 'rpg-dialogue-bubble';
+                    bubble.innerHTML = `
+                        <div class="rpg-dialogue-name">${npcData.name} ${emotion}</div>
+                        <div class="rpg-dialogue-text">${displayText}</div>
+                    `;
+
+                    // 计算位置（考虑zoom=4的缩放）
+                    bubble.style.left = `${96 * 4}px`;  // 96是NPC的x坐标，乘4倍缩放
+                    bubble.style.top = `${(120 - 20) * 4}px`;  // 120是NPC的y坐标，减20让对话框在头顶
+
+                    overlay.appendChild(bubble);
+
+                    // 根据文字长度调整显示时间
+                    const displayTime = Math.min(3000 + dialogue.length * 30, 6000);
+
+                    this.time.delayedCall(displayTime, () => {
+                        dialogBg.destroy();
+                        bubble.remove();
+                    });
+                }
             }
             
             updateInventory(inventory) {
