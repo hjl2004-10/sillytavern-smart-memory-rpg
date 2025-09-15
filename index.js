@@ -679,7 +679,7 @@ jQuery(async () => {
   
   // 创建悬浮按钮和RPG窗口（直接添加到body，不依赖扩展面板）
   const floatingButton = `
-    <div id="rpg-floating-button" title="打开RPG记忆世界" style="position: fixed !important; z-index: 2147483647 !important; display: flex !important; visibility: visible !important; opacity: 0.9 !important; pointer-events: auto !important;">
+    <div id="rpg-floating-button" title="打开RPG记忆世界">
       <svg width="32" height="32" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
         <!-- 游戏手柄图标 -->
         <path d="M21 6H3c-1.1 0-2 .9-2 2v8c0 1.1.9 2 2 2h5.5l3.5-4 3.5 4H21c1.1 0 2-.9 2-2V8c0-1.1-.9-2-2-2z" 
@@ -742,44 +742,35 @@ jQuery(async () => {
     $('body').append($button);
     $('body').append($window);
     
-    // 检测是否是移动设备
-    const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent) ||
-                     ('ontouchstart' in window) ||
-                     (navigator.maxTouchPoints > 0) ||
-                     (window.innerWidth <= 768);
+    // 不要用attr设置样式，直接用CSS方法
+    $button.css({
+      'position': 'fixed',
+      'bottom': '80px',
+      'right': '20px',
+      'width': '60px',
+      'height': '60px',
+      'border-radius': '50%',
+      'background': 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+      'border': '3px solid #fff',
+      'box-shadow': '0 4px 15px rgba(102, 126, 234, 0.5)',
+      'cursor': 'pointer',
+      'z-index': '2147483647',
+      'display': 'flex',
+      'align-items': 'center',
+      'justify-content': 'center',
+      'visibility': 'visible',
+      'opacity': '0.9'
+    });
 
-    // 根据设备类型设置不同的样式
-    const bottomPosition = isMobile ? '100px' : '80px';
-    const rightPosition = isMobile ? '15px' : '20px';
-    const buttonSize = isMobile ? '50px' : '60px';
-
-    console.log(`设备类型: ${isMobile ? '移动设备' : '桌面设备'}`);
-    console.log(`按钮位置: bottom=${bottomPosition}, right=${rightPosition}`);
-
-    // 强制设置样式确保显示
-    $button.attr('style', `
-      position: fixed !important;
-      bottom: ${bottomPosition} !important;
-      right: ${rightPosition} !important;
-      width: ${buttonSize} !important;
-      height: ${buttonSize} !important;
-      border-radius: 50% !important;
-      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%) !important;
-      border: 3px solid #fff !important;
-      box-shadow: 0 4px 15px rgba(102, 126, 234, 0.5) !important;
-      cursor: pointer !important;
-      z-index: 2147483647 !important;
-      display: flex !important;
-      align-items: center !important;
-      justify-content: center !important;
-      visibility: visible !important;
-      opacity: 0.9 !important;
-      pointer-events: auto !important;
-      -webkit-tap-highlight-color: transparent !important;
-      touch-action: manipulation !important;
-      -webkit-transform: translateZ(0) !important;
-      transform: translateZ(0) !important;
-    `);
+    // 移动端特殊处理
+    if (window.innerWidth <= 768) {
+      $button.css({
+        'bottom': '100px',
+        'right': '15px',
+        'width': '50px',
+        'height': '50px'
+      });
+    }
     
     console.log('✅ RPG悬浮按钮已创建并添加到body');
     console.log('按钮元素:', $('#rpg-floating-button'));
