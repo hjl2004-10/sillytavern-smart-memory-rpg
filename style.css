@@ -299,8 +299,8 @@
 /* RPG悬浮按钮 - 默认样式 */
 #rpg-floating-button {
     position: fixed !important;
-    bottom: 20px !important;
-    right: 20px !important;
+    bottom: 80px !important;  /* 提高位置，避免被底部导航栏遮挡 */
+    right: 15px !important;
     width: 60px !important;
     height: 60px !important;
     border-radius: 50% !important;
@@ -374,14 +374,14 @@ div#rpg-floating-button {
 }
 
 /* 手机适配 - 小屏幕 */
-@media (max-width: 480px) {
+@media screen and (max-width: 480px) {
     /* 针对竖屏手机的特殊处理 */
     #rpg-floating-button {
-        /* 简化位置设置，避免冲突 */
-        bottom: 70px !important;
-        right: 10px !important;
-        width: 50px !important;
-        height: 50px !important;
+        /* 提高位置，避免被系统UI遮挡 */
+        bottom: 100px !important;
+        right: 15px !important;
+        width: 48px !important;
+        height: 48px !important;
     }
     
     /* RPG画布手机适配 */
@@ -399,15 +399,15 @@ div#rpg-floating-button {
     }
 }
 
-/* 手机适配 - 中等屏幕和通用手机屏幕 */
-@media (max-width: 768px) {
+/* 平板和手机适配 - 中等屏幕 */
+@media screen and (max-width: 768px) {
     /* 悬浮按钮位置确保在屏幕内 */
     #rpg-floating-button {
         position: fixed !important;
-        bottom: 70px !important;
-        right: 10px !important;
-        width: 55px !important;
-        height: 55px !important;
+        bottom: 90px !important;  /* 适当提高，避免被遮挡 */
+        right: 15px !important;
+        width: 52px !important;
+        height: 52px !important;
         z-index: 999999 !important;
         display: flex !important;
         visibility: visible !important;
@@ -484,5 +484,111 @@ div#rpg-floating-button {
         background: rgba(0,0,0,0.5);
         z-index: -1;
         pointer-events: auto;
+    }
+}
+
+/* =============== 额外的移动端优化 =============== */
+
+/* iOS Safari特殊处理 */
+@supports (-webkit-touch-callout: none) {
+    #rpg-floating-button {
+        position: fixed !important;
+        /* 使用安全区域，避免被系统UI遮挡 */
+        bottom: calc(env(safe-area-inset-bottom) + 80px) !important;
+        right: calc(env(safe-area-inset-right) + 15px) !important;
+        /* 启用硬件加速 */
+        -webkit-transform: translateZ(0);
+        transform: translateZ(0);
+    }
+}
+
+/* Android Chrome特殊处理 */
+@media screen and (max-width: 768px) {
+    /* 强制显示悬浮按钮 */
+    body #rpg-floating-button,
+    html #rpg-floating-button {
+        display: flex !important;
+        visibility: visible !important;
+        opacity: 0.9 !important;
+        pointer-events: auto !important;
+    }
+}
+
+/* 触摸设备优化 */
+@media (hover: none) and (pointer: coarse) {
+    #rpg-floating-button {
+        /* 增加触摸目标大小 */
+        min-width: 44px !important;
+        min-height: 44px !important;
+        /* 添加触摸反馈 */
+        -webkit-tap-highlight-color: rgba(102, 126, 234, 0.3);
+        touch-action: manipulation;  /* 防止双击缩放 */
+    }
+
+    #rpg-floating-button:active {
+        transform: scale(0.95);
+        opacity: 0.7;
+    }
+}
+
+/* =============== 字体修复 - 移除马赛克字体 =============== */
+
+/* RPG游戏窗口字体修复 */
+#rpg-floating-window,
+#rpg-floating-window * {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif !important;
+    -webkit-font-smoothing: antialiased !important;
+    -moz-osx-font-smoothing: grayscale !important;
+    text-rendering: optimizeLegibility !important;
+}
+
+/* 面板字体优化 */
+.rpg-inventory-panel,
+.rpg-player-panel,
+.rpg-event-panel {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif !important;
+    font-size: 12px !important;
+    line-height: 1.4 !important;
+}
+
+/* 标题字体 */
+.rpg-inventory-title,
+.rpg-player-title,
+.rpg-event-title {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif !important;
+    font-weight: 600 !important;
+    font-size: 14px !important;
+}
+
+/* 物品和文本字体 */
+.rpg-inventory-item,
+.rpg-player-text,
+.rpg-event-text {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif !important;
+    font-size: 12px !important;
+}
+
+/* 移动端字体大小调整 */
+@media screen and (max-width: 768px) {
+    .rpg-inventory-title,
+    .rpg-player-title,
+    .rpg-event-title {
+        font-size: 12px !important;
+    }
+
+    .rpg-inventory-item,
+    .rpg-player-text,
+    .rpg-event-text {
+        font-size: 11px !important;
+    }
+}
+
+/* 确保悬浮按钮在横屏模式下也正常显示 */
+@media screen and (max-height: 500px) and (orientation: landscape) {
+    #rpg-floating-button {
+        bottom: 20px !important;
+        right: 60px !important;
+        width: 45px !important;
+        height: 45px !important;
     }
 }
