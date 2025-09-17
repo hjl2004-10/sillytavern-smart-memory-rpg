@@ -75,7 +75,15 @@
       "y": 50-120随机,  // 地图实际高度160
       "dialogue": "最近说的话或想说的话",
       "emotion": "happy/sad/angry/neutral",
-      "relationship": "与主角关系"
+      "relationship": "与主角关系",
+      "description": "角色背景、性格、特征等附加说明",
+      "inventory": [
+        {
+          "name": "物品名",
+          "quantity": 数量,
+          "description": "物品描述"
+        }
+      ]
     }
   ],
   "inventory": [
@@ -100,7 +108,9 @@
 5. 对话内容要符合角色性格
 6. 永久记忆保持简洁但完整
 7. 坐标要分散，避免重叠
-8. 地图大小192x160像素，NPC位置不要超出边界</textarea>
+8. 地图大小192x160像素，NPC位置不要超出边界
+9. 为每个NPC添加description字段描述其背景特征
+10. 为重要NPC添加inventory字段描述其拥有的物品</textarea>
                 </div>
                 
                 <hr class="sysHR">
@@ -245,6 +255,244 @@
 </div>
 
 <!-- RPG游戏窗口会通过JS动态添加到body -->
+
+<!-- NPC编辑窗口 -->
+<div id="npc-edit-modal" style="display: none;">
+    <div class="npc-edit-overlay"></div>
+    <div class="npc-edit-container">
+        <div class="npc-edit-header">
+            <h3>编辑NPC</h3>
+            <button class="npc-edit-close" id="close_npc_edit">✖</button>
+        </div>
+        <div class="npc-edit-content">
+            <div class="npc-edit-form">
+                <div class="npc-edit-row">
+                    <label>角色名：</label>
+                    <input type="text" id="npc_edit_name" placeholder="输入角色名">
+                </div>
+                <div class="npc-edit-row">
+                    <label>心情：</label>
+                    <select id="npc_edit_emotion">
+                        <option value="happy">开心 😊</option>
+                        <option value="sad">伤心 😢</option>
+                        <option value="angry">生气 😠</option>
+                        <option value="neutral">平静 😐</option>
+                    </select>
+                </div>
+                <div class="npc-edit-row">
+                    <label>台词：</label>
+                    <textarea id="npc_edit_dialogue" placeholder="输入角色台词..." rows="3"></textarea>
+                </div>
+                <div class="npc-edit-row">
+                    <label>背包：</label>
+                    <textarea id="npc_edit_inventory" placeholder="输入背包物品，每行一个，格式：物品名 x数量" rows="3"></textarea>
+                    <small>示例：金币 x100<br>药水 x5</small>
+                </div>
+                <div class="npc-edit-row">
+                    <label>附加说明：</label>
+                    <textarea id="npc_edit_description" placeholder="输入角色的背景、关系等附加信息..." rows="3"></textarea>
+                </div>
+                <div class="npc-edit-row">
+                    <label>外观ID：</label>
+                    <select id="npc_edit_sprite_id">
+                        <optgroup label="战士类">
+                            <option value="0">剑士 (0)</option>
+                            <option value="1">骑士 (1)</option>
+                            <option value="2">勇者 (2)</option>
+                        </optgroup>
+                        <optgroup label="法师类">
+                            <option value="10">魔法师 (10)</option>
+                            <option value="11">巫师 (11)</option>
+                            <option value="12">贤者 (12)</option>
+                        </optgroup>
+                        <optgroup label="游侠类">
+                            <option value="20">弓箭手 (20)</option>
+                            <option value="21">盗贼 (21)</option>
+                            <option value="22">刺客 (22)</option>
+                        </optgroup>
+                        <optgroup label="平民类">
+                            <option value="30">村民 (30)</option>
+                            <option value="31">商人 (31)</option>
+                            <option value="32">农民 (32)</option>
+                        </optgroup>
+                        <optgroup label="贵族类">
+                            <option value="40">国王 (40)</option>
+                            <option value="41">公主 (41)</option>
+                            <option value="42">贵族 (42)</option>
+                        </optgroup>
+                        <optgroup label="神职类">
+                            <option value="50">牧师 (50)</option>
+                            <option value="51">修女 (51)</option>
+                            <option value="52">圣骑士 (52)</option>
+                        </optgroup>
+                        <optgroup label="特殊类">
+                            <option value="60">精灵 (60)</option>
+                            <option value="61">兽人 (61)</option>
+                            <option value="62">矮人 (62)</option>
+                        </optgroup>
+                    </select>
+                </div>
+                <div class="npc-edit-buttons">
+                    <button id="npc_edit_save" class="menu_button">保存</button>
+                    <button id="npc_edit_cancel" class="menu_button">取消</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+/* NPC编辑窗口样式 */
+#npc-edit-modal {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    z-index: 999999;
+}
+
+.npc-edit-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.7);
+}
+
+.npc-edit-container {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    background: #1a1a1a;
+    border: 2px solid #333;
+    border-radius: 10px;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.8);
+    width: 90%;
+    max-width: 500px;
+    max-height: 80vh;
+    overflow: auto;
+}
+
+.npc-edit-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 15px 20px;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    border-radius: 8px 8px 0 0;
+}
+
+.npc-edit-header h3 {
+    margin: 0;
+    font-size: 18px;
+}
+
+.npc-edit-close {
+    background: none;
+    border: none;
+    color: white;
+    font-size: 20px;
+    cursor: pointer;
+    padding: 0;
+    width: 30px;
+    height: 30px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    transition: background 0.3s;
+}
+
+.npc-edit-close:hover {
+    background: rgba(255, 255, 255, 0.2);
+}
+
+.npc-edit-content {
+    padding: 20px;
+}
+
+.npc-edit-form {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+}
+
+.npc-edit-row {
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+}
+
+.npc-edit-row label {
+    font-weight: bold;
+    color: #ccc;
+    font-size: 14px;
+}
+
+.npc-edit-row input,
+.npc-edit-row textarea,
+.npc-edit-row select {
+    background: #2a2a2a;
+    border: 1px solid #444;
+    color: #fff;
+    padding: 8px 12px;
+    border-radius: 5px;
+    font-size: 14px;
+    resize: vertical;
+}
+
+.npc-edit-row input:focus,
+.npc-edit-row textarea:focus,
+.npc-edit-row select:focus {
+    outline: none;
+    border-color: #667eea;
+    box-shadow: 0 0 5px rgba(102, 126, 234, 0.3);
+}
+
+.npc-edit-row small {
+    color: #888;
+    font-size: 12px;
+    margin-top: 2px;
+}
+
+.npc-edit-buttons {
+    display: flex;
+    gap: 10px;
+    justify-content: flex-end;
+    margin-top: 20px;
+    padding-top: 15px;
+    border-top: 1px solid #333;
+}
+
+.npc-edit-buttons .menu_button {
+    min-width: 80px;
+    padding: 8px 16px;
+}
+
+/* 移动端适配 */
+@media (max-width: 768px) {
+    .npc-edit-container {
+        width: 95%;
+        max-height: 90vh;
+    }
+
+    .npc-edit-header {
+        padding: 12px 15px;
+    }
+
+    .npc-edit-content {
+        padding: 15px;
+    }
+
+    .npc-edit-buttons {
+        flex-direction: column;
+    }
+}
+</style>
 
 <!-- 加载Phaser库 -->
 <script src="https://cdn.jsdelivr.net/npm/phaser@3.70.0/dist/phaser.min.js"></script>
@@ -657,8 +905,37 @@ window.RPGMemoryGame = {
                 nameText.setDepth(15);
                 
                 npcSprite.setInteractive();
+
+                // 双击检测变量
+                npcSprite.clickCount = 0;
+                npcSprite.lastClickTime = 0;
+
                 npcSprite.on('pointerdown', () => {
-                    this.showDialogue(npcData);
+                    const currentTime = Date.now();
+                    const timeDiff = currentTime - npcSprite.lastClickTime;
+
+                    if (timeDiff < 500) { // 500ms内的点击认为是双击
+                        npcSprite.clickCount++;
+                        if (npcSprite.clickCount >= 2) {
+                            // 双击 - 打开编辑模式
+                            this.openNPCEditMode(npcData);
+                            npcSprite.clickCount = 0;
+                            return;
+                        }
+                    } else {
+                        npcSprite.clickCount = 1;
+                    }
+
+                    npcSprite.lastClickTime = currentTime;
+
+                    // 延迟执行单击事件，等待可能的第二次点击
+                    setTimeout(() => {
+                        if (npcSprite.clickCount === 1) {
+                            // 单击 - 显示对话
+                            this.showDialogue(npcData);
+                            npcSprite.clickCount = 0;
+                        }
+                    }, 500);
                 });
                 
                 this.dynamicNPCs[npcData.id] = {
@@ -779,25 +1056,54 @@ window.RPGMemoryGame = {
             updatePlayerDialogue(playerData) {
                 const playerText = document.getElementById('rpg-player-text');
                 if (playerText && playerData) {
-                    const emotion = playerData.emotion === 'happy' ? '😊' : 
-                                  playerData.emotion === 'sad' ? '😢' : 
+                    const emotion = playerData.emotion === 'happy' ? '😊' :
+                                  playerData.emotion === 'sad' ? '😢' :
                                   playerData.emotion === 'angry' ? '😠' : '😐';
-                    
+
                     const dialogue = playerData.dialogue || '等待主角说话...';
                     const status = playerData.status || '';
-                    
+
                     // 显示主角台词和状态
                     let displayText = `${emotion} ${dialogue}`;
                     if (status) {
                         displayText += `\n[状态: ${status}]`;
                     }
                     playerText.textContent = displayText;
-                    
+
                     console.log(`更新主角台词: ${dialogue}`);
                     if (status) {
                         console.log(`主角状态: ${status}`);
                     }
                 }
+            }
+
+            openNPCEditMode(npcData) {
+                console.log('打开NPC编辑模式:', npcData);
+
+                // 将当前编辑的NPC数据保存到全局变量
+                window.currentEditingNPC = npcData;
+
+                // 填充编辑表单
+                document.getElementById('npc_edit_name').value = npcData.name || '';
+                document.getElementById('npc_edit_emotion').value = npcData.emotion || 'neutral';
+                document.getElementById('npc_edit_dialogue').value = npcData.dialogue || '';
+                document.getElementById('npc_edit_sprite_id').value = npcData.spriteId || 0;
+
+                // 处理背包数据
+                if (npcData.inventory && Array.isArray(npcData.inventory)) {
+                    const inventoryText = npcData.inventory.map(item =>
+                        `${item.name} x${item.quantity || 1}`
+                    ).join('\n');
+                    document.getElementById('npc_edit_inventory').value = inventoryText;
+                } else {
+                    document.getElementById('npc_edit_inventory').value = '';
+                }
+
+                // 处理附加说明
+                document.getElementById('npc_edit_description').value = npcData.description || npcData.relationship || '';
+
+                // 显示编辑窗口
+                document.getElementById('npc-edit-modal').style.display = 'block';
             }
             
             update() {

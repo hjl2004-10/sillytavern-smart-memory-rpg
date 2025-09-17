@@ -19,7 +19,7 @@ const defaultSettings = {
 
 【Character ID Map】角色外观ID对应表（0-99可用）：
 - 0-9: 战士类（剑士、骑士、勇者）
-- 10-19: 法师类（魔法师、巫师、贤者）  
+- 10-19: 法师类（魔法师、巫师、贤者）
 - 20-29: 游侠类（弓箭手、盗贼、刺客）
 - 30-39: 平民类（村民、商人、农民）
 - 40-49: 贵族类（国王、公主、贵族）
@@ -46,7 +46,15 @@ const defaultSettings = {
       "y": 50-120随机,  // 地图实际高度160
       "dialogue": "最近说的话或想说的话",
       "emotion": "happy/sad/angry/neutral",
-      "relationship": "与主角关系"
+      "relationship": "与主角关系",
+      "description": "角色背景、性格、特征等附加说明",
+      "inventory": [
+        {
+          "name": "物品名",
+          "quantity": 数量,
+          "description": "物品描述"
+        }
+      ]
     }
   ],
   "inventory": [
@@ -71,7 +79,9 @@ const defaultSettings = {
 5. 对话内容要符合角色性格
 6. 永久记忆保持简洁但完整
 7. 坐标要分散，避免重叠
-8. 地图大小192x160像素，NPC位置不要超出边界`,
+8. 地图大小192x160像素，NPC位置不要超出边界
+9. 为每个NPC添加description字段描述其背景特征
+10. 为重要NPC添加inventory字段描述其拥有的物品`,
   injectionContent: "",
   enabled: true,
   autoUpdate: true,
@@ -1016,36 +1026,72 @@ jQuery(async () => {
   // 测试JSON解析按钮
   $("#test_rpg_json").on("click", function() {
     const testData = {
+      player: {
+        name: "冒险者",
+        dialogue: "这家冰淇淋店真有趣！",
+        emotion: "happy",
+        status: "正在探索新地点"
+      },
       npcs: [
         {
           id: "npc_1",
           name: "测试商人",
           spriteId: 35,
-          x: 100,  // 地图范围内
+          x: 100,
           y: 100,
-          dialogue: "欢迎来到冰淇淋店！",
+          dialogue: "欢迎来到冰淇淋店！我这里有最好的冰淇淋！",
           emotion: "happy",
-          relationship: "友好"
+          relationship: "友好的店主",
+          description: "一位热情的冰淇淋店老板，经营这家店已经很多年了。总是面带微笑地迎接每一位顾客。",
+          inventory: [
+            { name: "特制冰淇淋", quantity: 10, description: "店主的招牌冰淇淋" },
+            { name: "冰淇淋配料", quantity: 20, description: "各种美味配料" },
+            { name: "店铺钥匙", quantity: 1, description: "冰淇淋店的钥匙" }
+          ]
         },
         {
           id: "npc_2",
-          name: "冒险者",
+          name: "年轻冒险者",
           spriteId: 5,
-          x: 150,  // 地图范围内
+          x: 150,
           y: 120,
-          dialogue: "我在寻找传说中的冰淇淋！",
+          dialogue: "我在寻找传说中的彩虹冰淇淋！听说只有这家店有！",
           emotion: "neutral",
-          relationship: "陌生人"
+          relationship: "初次见面的冒险者",
+          description: "一位充满好奇心的年轻冒险者，正在寻找传说中的特殊冰淇淋。背着一个装满冒险装备的背包。",
+          inventory: [
+            { name: "冒险者背包", quantity: 1, description: "装满各种工具的背包" },
+            { name: "地图", quantity: 1, description: "标记了各种传说地点的地图" },
+            { name: "银币", quantity: 50, description: "冒险途中收集的银币" }
+          ]
+        },
+        {
+          id: "npc_3",
+          name: "神秘法师",
+          spriteId: 12,
+          x: 80,
+          y: 90,
+          dialogue: "这些冰淇淋...蕴含着神奇的魔力...",
+          emotion: "neutral",
+          relationship: "神秘的访客",
+          description: "一位神秘的法师，似乎对冰淇淋店的魔法特质很感兴趣。身穿深蓝色长袍，眼中闪烁着智慧的光芒。",
+          inventory: [
+            { name: "魔法法杖", quantity: 1, description: "蕴含古老魔力的法杖" },
+            { name: "魔法药水", quantity: 3, description: "各种颜色的神秘药水" },
+            { name: "咒语书", quantity: 1, description: "记录着古老咒语的书籍" }
+          ]
         }
       ],
       inventory: [
-        { name: "冰淇淋", quantity: 3 },
-        { name: "金币", quantity: 100 }
+        { name: "普通冰淇淋", quantity: 3, description: "美味的普通冰淇淋" },
+        { name: "金币", quantity: 100, description: "通用货币" },
+        { name: "冒险日记", quantity: 1, description: "记录冒险经历的日记" }
       ],
       events: {
-        current: "正在探索冰淇淋店",
-        permanent: "第一次来到冰淇淋店，遇到了友好的商人"
-      }
+        current: "正在冰淇淋店中探索，与各种有趣的角色交流",
+        permanent: "发现了一家神奇的冰淇淋店，遇到了友好的商人和其他冒险者，这里似乎隐藏着某种魔法秘密"
+      },
+      location: "魔法冰淇淋店"
     };
     
     // 将测试数据写入注入框
@@ -1142,17 +1188,42 @@ jQuery(async () => {
     const content = $(this).val();
     const context = getContext();
     const characterName = context?.name2 || "unknown";
-    
+
     // 保存到当前角色
     if (!extension_settings[extensionName].characterInjections) {
       extension_settings[extensionName].characterInjections = {};
     }
     extension_settings[extensionName].characterInjections[characterName] = content;
     extension_settings[extensionName].injectionContent = content;
-    
+
     console.log(`智能总结: 注入内容已手动编辑，长度: ${content.length}`);
     console.log(`智能总结: 内容预览: ${content.substring(0, 50)}...`);
     saveSettingsDebounced();
+  });
+
+  // NPC编辑窗口事件处理
+  $(document).on("click", "#close_npc_edit, .npc-edit-overlay", function() {
+    $("#npc-edit-modal").hide();
+    window.currentEditingNPC = null;
+  });
+
+  $(document).on("click", ".npc-edit-container", function(e) {
+    e.stopPropagation(); // 防止点击内容区域关闭窗口
+  });
+
+  $(document).on("click", "#npc_edit_cancel", function() {
+    $("#npc-edit-modal").hide();
+    window.currentEditingNPC = null;
+  });
+
+  $(document).on("click", "#npc_edit_save", function() {
+    if (!window.currentEditingNPC) {
+      toastr.warning("没有要保存的NPC数据", "NPC编辑");
+      return;
+    }
+
+    // 保存NPC编辑数据
+    saveNPCEdit();
   });
   
   // 加载设置
@@ -1204,5 +1275,122 @@ jQuery(async () => {
   console.log("智能总结: 初始设置:", extension_settings[extensionName]);
 });
 
+// NPC编辑保存函数
+function saveNPCEdit() {
+  if (!window.currentEditingNPC) {
+    return;
+  }
+
+  // 获取表单数据
+  const name = $("#npc_edit_name").val().trim();
+  const emotion = $("#npc_edit_emotion").val();
+  const dialogue = $("#npc_edit_dialogue").val().trim();
+  const spriteId = parseInt($("#npc_edit_sprite_id").val());
+  const description = $("#npc_edit_description").val().trim();
+  const inventoryText = $("#npc_edit_inventory").val().trim();
+
+  // 解析背包数据
+  let inventory = [];
+  if (inventoryText) {
+    const lines = inventoryText.split('\n');
+    lines.forEach(line => {
+      const trimmedLine = line.trim();
+      if (trimmedLine) {
+        // 解析格式：物品名 x数量
+        const match = trimmedLine.match(/^(.+?)\s*x\s*(\d+)$/);
+        if (match) {
+          inventory.push({
+            name: match[1].trim(),
+            quantity: parseInt(match[2]),
+            description: ""
+          });
+        } else {
+          // 如果格式不匹配，默认数量为1
+          inventory.push({
+            name: trimmedLine,
+            quantity: 1,
+            description: ""
+          });
+        }
+      }
+    });
+  }
+
+  // 更新NPC数据
+  window.currentEditingNPC.name = name || window.currentEditingNPC.name;
+  window.currentEditingNPC.emotion = emotion;
+  window.currentEditingNPC.dialogue = dialogue || window.currentEditingNPC.dialogue;
+  window.currentEditingNPC.spriteId = spriteId;
+  window.currentEditingNPC.description = description;
+  window.currentEditingNPC.inventory = inventory;
+
+  console.log("保存NPC编辑数据:", window.currentEditingNPC);
+
+  // 更新游戏中的NPC
+  if (window.RPGMemoryGame && window.RPGMemoryGame.scene) {
+    // 找到当前NPC并更新
+    const dynamicNPC = window.RPGMemoryGame.scene.dynamicNPCs[window.currentEditingNPC.id];
+    if (dynamicNPC) {
+      // 更新NPC数据
+      dynamicNPC.data = { ...window.currentEditingNPC };
+
+      // 更新外观
+      if (dynamicNPC.sprite) {
+        dynamicNPC.sprite.setFrame(spriteId);
+      }
+
+      // 更新名字
+      if (dynamicNPC.nameText) {
+        dynamicNPC.nameText.setText(name || '???');
+      }
+    }
+  }
+
+  // 更新注入内容中的数据
+  updateInjectionContentWithNPCEdit();
+
+  // 关闭编辑窗口
+  $("#npc-edit-modal").hide();
+  window.currentEditingNPC = null;
+
+  toastr.success("NPC信息已保存", "编辑成功");
+}
+
+// 更新注入内容中的NPC数据
+function updateInjectionContentWithNPCEdit() {
+  const currentContent = $("#smart_memory_rpg_injection_content").val();
+
+  try {
+    // 尝试解析JSON
+    const jsonMatch = currentContent.match(/\{[\s\S]*\}/);
+    if (jsonMatch) {
+      const rpgData = JSON.parse(jsonMatch[0]);
+
+      // 更新对应的NPC数据
+      if (rpgData.npcs && Array.isArray(rpgData.npcs)) {
+        const npcIndex = rpgData.npcs.findIndex(npc => npc.id === window.currentEditingNPC.id);
+        if (npcIndex !== -1) {
+          // 更新现有NPC
+          rpgData.npcs[npcIndex] = { ...rpgData.npcs[npcIndex], ...window.currentEditingNPC };
+        } else {
+          // 添加新NPC（如果不存在）
+          rpgData.npcs.push(window.currentEditingNPC);
+        }
+      } else {
+        // 如果没有npcs数组，创建一个
+        rpgData.npcs = [window.currentEditingNPC];
+      }
+
+      // 更新注入内容
+      const updatedJson = JSON.stringify(rpgData, null, 2);
+      const newContent = currentContent.replace(jsonMatch[0], updatedJson);
+      $("#smart_memory_rpg_injection_content").val(newContent).trigger('change');
+
+      console.log("已更新注入内容中的NPC数据");
+    }
+  } catch (error) {
+    console.log("无法解析注入内容中的JSON，跳过更新");
+  }
+}
 
 // 已经在上面export了getInjectionContent，不需要重复导出
