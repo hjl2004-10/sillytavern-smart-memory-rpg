@@ -264,6 +264,9 @@
             <h3>编辑NPC</h3>
             <button class="npc-edit-close" id="close_npc_edit">✖</button>
         </div>
+        <div class="npc-edit-tip">
+            <small>💡 提示：双击NPC或长按NPC可打开编辑模式</small>
+        </div>
         <div class="npc-edit-content">
             <div class="npc-edit-form">
                 <div class="npc-edit-row">
@@ -409,6 +412,18 @@
 
 .npc-edit-close:hover {
     background: rgba(255, 255, 255, 0.2);
+}
+
+.npc-edit-tip {
+    padding: 10px 20px;
+    background: rgba(102, 126, 234, 0.1);
+    border-bottom: 1px solid #333;
+    text-align: center;
+}
+
+.npc-edit-tip small {
+    color: #aaa;
+    font-size: 12px;
 }
 
 .npc-edit-content {
@@ -818,7 +833,16 @@ window.RPGMemoryGame = {
                     console.log(`更新${filteredNPCs.length}个NPC（过滤掉主角）`);
                     // 清除旧NPC
                     Object.values(this.dynamicNPCs).forEach(npc => {
-                        if (npc.sprite) npc.sprite.destroy();
+                        if (npc.sprite) {
+                            // 清理所有超时器
+                            if (npc.sprite.clickTimeout) {
+                                clearTimeout(npc.sprite.clickTimeout);
+                            }
+                            if (npc.sprite.longPressTimeout) {
+                                clearTimeout(npc.sprite.longPressTimeout);
+                            }
+                            npc.sprite.destroy();
+                        }
                         if (npc.nameText) npc.nameText.destroy();
                     });
                     this.dynamicNPCs = {};
@@ -906,36 +930,63 @@ window.RPGMemoryGame = {
                 
                 npcSprite.setInteractive();
 
-                // 双击检测变量
+                // 交互检测变量
                 npcSprite.clickCount = 0;
                 npcSprite.lastClickTime = 0;
+                npcSprite.clickTimeout = null;
+                npcSprite.longPressTimeout = null;
+                npcSprite.isLongPressed = false;
 
-                npcSprite.on('pointerdown', () => {
+                npcSprite.on('pointerdown', (pointer) => {
                     const currentTime = Date.now();
                     const timeDiff = currentTime - npcSprite.lastClickTime;
 
-                    if (timeDiff < 500) { // 500ms内的点击认为是双击
-                        npcSprite.clickCount++;
-                        if (npcSprite.clickCount >= 2) {
-                            // 双击 - 打开编辑模式
-                            this.openNPCEditMode(npcData);
-                            npcSprite.clickCount = 0;
-                            return;
-                        }
-                    } else {
-                        npcSprite.clickCount = 1;
+                    // 清除之前的超时
+                    if (npcSprite.clickTimeout) {
+                        clearTimeout(npcSprite.clickTimeout);
+                        npcSprite.clickTimeout = null;
                     }
 
+                    // 设置长按检测（移动端备选方案）
+                    npcSprite.isLongPressed = false;
+                    npcSprite.longPressTimeout = setTimeout(() => {
+                        npcSprite.isLongPressed = true;
+                        this.openNPCEditMode(npcData);
+                    }, 800); // 长按800ms触发编辑
+
+                    if (timeDiff < 400) { // 400ms内的点击认为是双击
+                        // 清除长按检测
+                        if (npcSprite.longPressTimeout) {
+                            clearTimeout(npcSprite.longPressTimeout);
+                            npcSprite.longPressTimeout = null;
+                        }
+                        // 双击检测到，立即执行编辑操作
+                        npcSprite.clickCount = 0;
+                        this.openNPCEditMode(npcData);
+                        return;
+                    }
+
+                    // 重置点击计数
+                    npcSprite.clickCount = 1;
                     npcSprite.lastClickTime = currentTime;
 
-                    // 延迟执行单击事件，等待可能的第二次点击
-                    setTimeout(() => {
-                        if (npcSprite.clickCount === 1) {
+                    // 设置延迟执行单击事件
+                    npcSprite.clickTimeout = setTimeout(() => {
+                        if (npcSprite.clickCount === 1 && !npcSprite.isLongPressed) {
                             // 单击 - 显示对话
                             this.showDialogue(npcData);
-                            npcSprite.clickCount = 0;
                         }
-                    }, 500);
+                        npcSprite.clickCount = 0;
+                        npcSprite.clickTimeout = null;
+                    }, 400);
+                });
+
+                // 添加pointerup事件来清除长按检测
+                npcSprite.on('pointerup', () => {
+                    if (npcSprite.longPressTimeout) {
+                        clearTimeout(npcSprite.longPressTimeout);
+                        npcSprite.longPressTimeout = null;
+                    }
                 });
                 
                 this.dynamicNPCs[npcData.id] = {
