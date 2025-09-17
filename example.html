@@ -466,22 +466,31 @@ window.RPGMemoryGame = {
                 
                 // 添加点击/触摸移动功能（手机端支持）
                 this.input.on('pointerdown', (pointer) => {
+                    // 确保是主要按钮或触摸
+                    if (pointer.button !== 0) return;
+
                     // 将屏幕坐标转换为游戏世界坐标
                     const worldPoint = this.cameras.main.getWorldPoint(pointer.x, pointer.y);
-                    
+
+                    // 确保点击位置在游戏世界范围内
+                    if (worldPoint.x < 0 || worldPoint.x > this.map.widthInPixels ||
+                        worldPoint.y < 0 || worldPoint.y > this.map.heightInPixels) {
+                        return;
+                    }
+
                     // 设置移动目标
                     this.moveTarget = {
                         x: worldPoint.x,
                         y: worldPoint.y
                     };
-                    
+
                     // 创建点击指示器（可选）
                     if (this.clickMarker) {
                         this.clickMarker.destroy();
                     }
-                    this.clickMarker = this.add.circle(worldPoint.x, worldPoint.y, 3, 0x00ff00, 0.8);
+                    this.clickMarker = this.add.circle(worldPoint.x, worldPoint.y, 2, 0x00ff00, 0.8);
                     this.clickMarker.setDepth(1);
-                    
+
                     // 1秒后移除指示器
                     this.time.delayedCall(1000, () => {
                         if (this.clickMarker) {
@@ -957,10 +966,22 @@ window.RPGMemoryGame = {
         const baseWidth = 192;
         const baseHeight = 160;
 
-        // 计算缩放比例，确保游戏能完整显示在容器中
-        const scaleX = Math.floor(containerWidth / baseWidth);
-        const scaleY = Math.floor(containerHeight / baseHeight);
-        const scale = Math.min(Math.max(scaleX, scaleY), 4); // 最小1倍，最大4倍缩放
+        // 手机端特殊处理
+        const isMobile = window.innerWidth <= 768;
+        let scale;
+
+        if (isMobile) {
+            // 手机端使用更保守的缩放策略
+            const scaleX = containerWidth / baseWidth;
+            const scaleY = containerHeight / baseHeight;
+            scale = Math.min(scaleX, scaleY, 3); // 手机端最大3倍缩放
+            scale = Math.max(scale, 1.5); // 最小1.5倍，确保可见性
+        } else {
+            // 桌面端保持原逻辑
+            const scaleX = Math.floor(containerWidth / baseWidth);
+            const scaleY = Math.floor(containerHeight / baseHeight);
+            scale = Math.min(Math.max(scaleX, scaleY, 2), 4); // 最小2倍，最大4倍缩放
+        }
 
         // 游戏配置 - 使用动态缩放
         const config = {
