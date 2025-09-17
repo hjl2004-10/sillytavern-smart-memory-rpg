@@ -395,10 +395,10 @@ div#rpg-floating-button {
         height: 50px !important;
     }
     
-    /* RPG画布手机适配 - 让Phaser自己管理尺寸 */
+    /* RPG画布手机适配 - 手机端2倍缩放 384x320 */
     #rpg-canvas {
-        width: 100% !important;
-        height: auto !important;
+        width: 384px !important;
+        height: 320px !important;
         max-width: 100% !important;
         max-height: calc(100vh - 60px) !important;
     }
