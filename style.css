@@ -401,7 +401,7 @@ div#rpg-floating-button {
         height: auto !important;
         max-width: 100vw !important;
         max-height: calc(100vh - 60px) !important;
-        aspect-ratio: 384/320; /* 手机端2倍缩放的比例 */
+        aspect-ratio: 288/240; /* 手机端1.5倍缩放的比例 */
     }
     
     #rpg-game-container {
@@ -432,7 +432,7 @@ div#rpg-floating-button {
         height: auto !important;
         max-width: 100vw !important;
         max-height: calc(100vh - 60px) !important;
-        aspect-ratio: 384/320; /* 保持手机端比例 */
+        aspect-ratio: 288/240; /* 保持手机端1.5倍缩放比例 */
     }
 
     #rpg-floating-window {
