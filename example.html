@@ -451,9 +451,8 @@ window.RPGMemoryGame = {
                 this.player.body.setSize(8, 8);
                 this.player.body.setOffset(4, 4);
                 
-                // 设置相机居中显示整个地图（而不是跟随玩家）
-                // 在小地图上，跟随玩家会导致只看到地图的部分区域
-                this.cameras.main.centerOn(map.widthInPixels / 2, map.heightInPixels / 2);
+                // 设置相机跟随玩家
+                this.cameras.main.startFollow(this.player);
                 
                 // 创建碰撞系统
                 this.createCollisions();
