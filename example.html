@@ -278,11 +278,31 @@ window.RPGMemoryGame = {
     init: function() {
         if (this.game) return; // 防止重复初始化
 
-        // 确保canvas存在
-        const canvas = document.getElementById('rpg-canvas');
+        // 确保canvas存在，如果不存在就创建一个
+        let canvas = document.getElementById('rpg-canvas');
         if (!canvas) {
-            console.error('RPG Memory: Canvas元素未找到');
-            return;
+            console.log('RPG Memory: Canvas元素不存在，正在创建...');
+            const gameContainer = document.getElementById('rpg-game-container');
+            if (!gameContainer) {
+                console.error('RPG Memory: 游戏容器未找到');
+                return;
+            }
+
+            // 创建canvas元素
+            canvas = document.createElement('canvas');
+            canvas.id = 'rpg-canvas';
+            canvas.width = 192;
+            canvas.height = 160;
+
+            // 插入到正确的位置（在事件面板之前）
+            const eventPanel = document.getElementById('rpg-events');
+            if (eventPanel) {
+                gameContainer.insertBefore(canvas, eventPanel);
+            } else {
+                gameContainer.appendChild(canvas);
+            }
+
+            console.log('RPG Memory: Canvas元素已创建');
         }
 
         // 智能资源服务器选择
@@ -894,7 +914,7 @@ window.RPGMemoryGame = {
             width: 192,  // 地图实际宽度: 12格 × 16像素
             height: 160,  // 地图实际高度: 10格 × 16像素
             parent: 'rpg-game-container',
-            canvas: document.getElementById('rpg-canvas'),
+            canvas: canvas,  // 使用确保存在的canvas元素
             pixelArt: true,  // 保持像素完美渲染，让地图清晰
             zoom: 4,  // 4倍缩放显示 (最终显示768×640)
             physics: {
