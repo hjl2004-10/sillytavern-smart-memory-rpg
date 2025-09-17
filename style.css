@@ -193,11 +193,7 @@
 }
 
 #rpg-game-container {
-    position: absolute;  /* 改为绝对定位 */
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
+    position: relative;  /* 改为相对定位，让canvas能够居中 */
     width: 100%;
     height: 100%;
     background: #1a1a1a;
@@ -206,6 +202,10 @@
     pointer-events: auto;
     -webkit-tap-highlight-color: transparent;  /* 移除点击高亮 */
     user-select: none;  /* 禁止文本选择 */
+    /* 确保内容居中 */
+    display: flex;
+    align-items: center;
+    justify-content: center;
 }
 
 #rpg-canvas {
