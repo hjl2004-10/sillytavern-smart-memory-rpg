@@ -424,8 +424,15 @@ div#rpg-floating-button {
         visibility: visible !important;
         opacity: 0.9 !important;
     }
-    
-    
+
+    /* RPG画布手机适配 - 统一设置 */
+    #rpg-canvas {
+        width: 384px !important;
+        height: 320px !important;
+        max-width: 100% !important;
+        max-height: calc(100vh - 60px) !important;
+    }
+
     #rpg-floating-window {
         width: 100vw;
         height: 100vh;
