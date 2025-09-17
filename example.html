@@ -278,18 +278,12 @@ window.RPGMemoryGame = {
     init: function() {
         if (this.game) return; // 防止重复初始化
 
-        // 确保canvas存在并重置其状态
+        // 确保canvas存在
         const canvas = document.getElementById('rpg-canvas');
         if (!canvas) {
             console.error('RPG Memory: Canvas元素未找到');
             return;
         }
-
-        // 重置canvas属性，防止移动端尺寸问题
-        canvas.style.removeProperty('width');
-        canvas.style.removeProperty('height');
-        canvas.width = 192;
-        canvas.height = 160;
 
         // 智能资源服务器选择
         // 首先检查用户配置
@@ -690,19 +684,32 @@ window.RPGMemoryGame = {
                         <div class="rpg-dialogue-text">${displayText}</div>
                     `;
 
-                    // 计算NPC在画布上的实际位置（考虑zoom=4的缩放）
+                    // 计算NPC在画布上的实际位置（考虑canvas实际尺寸）
                     const npcSprite = this.dynamicNPCs[npcData.id]?.sprite;
                     if (npcSprite) {
+                        // 获取canvas的实际显示尺寸
+                        const canvas = document.getElementById('rpg-canvas');
+                        const canvasRect = canvas.getBoundingClientRect();
+
+                        // 计算缩放比例（实际显示尺寸 / 游戏世界尺寸）
+                        const scaleX = canvasRect.width / 192;  // 192是游戏世界宽度
+                        const scaleY = canvasRect.height / 160; // 160是游戏世界高度
+
                         // 获取NPC的世界坐标并转换为屏幕坐标
-                        const screenX = npcSprite.x * 4; // 考虑zoom=4
-                        const screenY = (npcSprite.y - 20) * 4; // 在NPC头顶显示，考虑zoom=4
+                        const screenX = npcSprite.x * scaleX;
+                        const screenY = (npcSprite.y - 20) * scaleY; // 在NPC头顶显示
 
                         bubble.style.left = `${screenX}px`;
                         bubble.style.top = `${screenY}px`;
                     } else {
                         // 如果找不到NPC精灵，使用默认位置
-                        bubble.style.left = `${96 * 4}px`;
-                        bubble.style.top = `${(120 - 20) * 4}px`;
+                        const canvas = document.getElementById('rpg-canvas');
+                        const canvasRect = canvas.getBoundingClientRect();
+                        const scaleX = canvasRect.width / 192;
+                        const scaleY = canvasRect.height / 160;
+
+                        bubble.style.left = `${96 * scaleX}px`;
+                        bubble.style.top = `${(120 - 20) * scaleY}px`;
                     }
 
                     overlay.appendChild(bubble);
@@ -926,26 +933,12 @@ window.RPGMemoryGame = {
                 overlay.remove();
             }
 
-            // 重置canvas状态，防止尺寸残留
-            const canvas = document.getElementById('rpg-canvas');
-            if (canvas) {
-                canvas.style.width = '';
-                canvas.style.height = '';
-                canvas.width = 192;
-                canvas.height = 160;
-            }
-
+            // 销毁游戏实例
             this.game.destroy(true);
             this.game = null;
             this.scene = null;
 
-            // 确保完全清理，防止移动端尺寸问题
-            setTimeout(() => {
-                if (canvas) {
-                    canvas.style.removeProperty('width');
-                    canvas.style.removeProperty('height');
-                }
-            }, 100);
+            console.log('RPG Memory: 游戏已销毁');
         }
     }
 };

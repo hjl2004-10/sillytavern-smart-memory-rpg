@@ -382,15 +382,13 @@ div#rpg-floating-button {
         height: 50px !important;
     }
 
-    /* RPG画布手机适配 - 修复第二次打开尺寸问题 */
+    /* RPG画布手机适配 - 让地图宽度适应屏幕 */
     #rpg-canvas {
         display: block !important;
         margin: 0 auto !important;
-        max-width: calc(100vw - 20px) !important;
-        max-height: calc(100vh - 100px) !important;
-        width: auto !important;
-        height: auto !important;
-        aspect-ratio: 768/640 !important;
+        width: 100vw !important;  /* 地图宽度占满屏幕 */
+        height: calc(100vw * 640 / 768) !important;  /* 按比例计算高度 */
+        max-height: calc(100vh - 50px) !important;  /* 留出标题栏空间 */
         object-fit: contain !important;
     }
 
@@ -402,6 +400,36 @@ div#rpg-floating-button {
         display: flex !important;
         align-items: center !important;
         justify-content: center !important;
+        padding: 0 !important;
+    }
+
+    /* 调整面板位置，避免遮挡地图 */
+    .rpg-inventory-panel {
+        top: 5px !important;
+        right: 5px !important;
+        font-size: 10px !important;
+        padding: 4px !important;
+        max-width: 120px !important;
+        opacity: 0.85 !important;
+    }
+
+    .rpg-player-panel {
+        top: 100px !important;
+        right: 5px !important;
+        font-size: 10px !important;
+        padding: 4px !important;
+        max-width: 120px !important;
+        opacity: 0.85 !important;
+    }
+
+    .rpg-event-panel {
+        top: 180px !important;
+        right: 5px !important;
+        font-size: 10px !important;
+        padding: 4px !important;
+        max-width: 120px !important;
+        opacity: 0.85 !important;
+        max-height: 100px !important;
     }
 }
 
@@ -418,15 +446,13 @@ div#rpg-floating-button {
         opacity: 0.9 !important;
     }
 
-    /* RPG画布缩放适配 - 修复第二次打开尺寸问题 */
+    /* RPG画布缩放适配 - 让地图充分利用屏幕空间 */
     #rpg-canvas {
         display: block !important;
         margin: 0 auto !important;
-        max-width: calc(100vw - 20px) !important;
-        max-height: calc(100vh - 100px) !important;
-        width: auto !important;
-        height: auto !important;
-        aspect-ratio: 768/640 !important;
+        width: calc(100vw - 10px) !important;  /* 地图宽度接近满屏 */
+        height: calc((100vw - 10px) * 640 / 768) !important;  /* 按比例计算高度 */
+        max-height: calc(100vh - 60px) !important;  /* 留出标题栏空间 */
         object-fit: contain !important;
     }
 
