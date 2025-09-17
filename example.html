@@ -323,27 +323,8 @@ window.RPGMemoryGame = {
             preload() {
                 // 使用全局变量或父级作用域的RESOURCE_SERVER
                 const resourceServer = window.RPGResourceServer || RESOURCE_SERVER;
-                console.log('RPG Memory: 开始加载资源，服务器:', resourceServer);
-
-                // 清理之前可能残留的加载器状态
-                this.load.removeAllListeners();
-                this.load.reset();
-
                 this.load.setBaseURL(resourceServer);
                 this.load.setCORS('anonymous');
-
-                // 强制重新加载所有资源，即使缓存中存在
-                const timestamp = Date.now();
-
-                // 添加加载进度监听
-                this.load.on('progress', (value) => {
-                    console.log('RPG Memory: 加载进度:', Math.round(value * 100) + '%');
-                });
-
-                // 添加加载完成监听
-                this.load.on('complete', () => {
-                    console.log('RPG Memory: 所有资源加载完成');
-                });
 
                 // 添加加载错误处理
                 this.load.on('loaderror', (file) => {
@@ -352,24 +333,23 @@ window.RPGMemoryGame = {
                     if (file.key === 'characters' && resourceServer.includes('8000')) {
                         console.log('RPG Memory: 尝试从默认远程服务器加载');
                         this.load.setBaseURL('https://www.lingxiai.fun');
-                        this.load.spritesheet('characters', 'sprites/characters.png?t=' + timestamp, {
+                        this.load.spritesheet('characters', 'sprites/characters.png', {
                             frameWidth: 16,
                             frameHeight: 32
                         });
-                        this.load.start();
                     }
                 });
 
-                // 加载tilemap JSON - 添加时间戳防止缓存
-                this.load.tilemapTiledJSON('map', 'maps/phaser_ready_map.json?t=' + timestamp);
+                // 加载tilemap JSON - 使用转换后的地图
+                this.load.tilemapTiledJSON('map', 'maps/phaser_ready_map.json');
 
-                // 加载tileset图片 - 添加时间戳防止缓存
-                this.load.image('tileset1', 'maps/Interiors_free_16x16.png?t=' + timestamp);
-                this.load.image('tileset2', 'maps/icecream_shop_layer2.png?t=' + timestamp);
-                this.load.image('background', 'maps/icecream_shop_layer1.png?t=' + timestamp);
+                // 加载tileset图片 - 使用服务器上实际的文件
+                this.load.image('tileset1', 'maps/Interiors_free_16x16.png');
+                this.load.image('tileset2', 'maps/icecream_shop_layer2.png');
+                this.load.image('background', 'maps/icecream_shop_layer1.png');
 
-                // 加载角色精灵 - 添加时间戳防止缓存
-                this.load.spritesheet('characters', 'sprites/characters.png?t=' + timestamp, {
+                // 加载角色精灵
+                this.load.spritesheet('characters', 'sprites/characters.png', {
                     frameWidth: 16,  // 正确的宽度
                     frameHeight: 32  // 正确的高度
                 });
@@ -379,14 +359,6 @@ window.RPGMemoryGame = {
             }
             
             create() {
-                console.log('RPG Memory: 开始创建游戏场景');
-
-                // 检查必要资源是否已加载
-                if (!this.textures.exists('map') || !this.textures.exists('characters')) {
-                    console.error('RPG Memory: 必要资源未加载，无法创建场景');
-                    return;
-                }
-
                 // 创建tilemap
                 const map = this.make.tilemap({ key: 'map' });
 
@@ -400,25 +372,22 @@ window.RPGMemoryGame = {
                 this.cameras.main.setBounds(0, 0, map.widthInPixels, map.heightInPixels);
 
                 // 渲染背景图像层
-                if (this.textures.exists('background')) {
-                    const bg = this.add.image(0, 0, 'background').setOrigin(0, 0);
-                }
+                const imageLayers = map.imageLayers;
+                // 直接添加背景图片
+                const bg = this.add.image(0, 0, 'background').setOrigin(0, 0);
 
                 // 添加tilesets - name必须匹配，但image使用Phaser加载的key
                 const tileset1 = map.addTilesetImage('1', 'tileset1');
                 const tileset2 = map.addTilesetImage('2', 'tileset2');
 
                 // 调试输出
-                console.log('RPG Memory: Tileset1:', tileset1);
-                console.log('RPG Memory: Tileset2:', tileset2);
+                console.log('Tileset1:', tileset1);
+                console.log('Tileset2:', tileset2);
 
                 // 创建图块层
                 const layer = map.createLayer('图块层 1', [tileset1, tileset2], 0, 0);
                 if (layer) {
                     layer.setVisible(true);
-                    console.log('RPG Memory: 地图层创建成功');
-                } else {
-                    console.warn('RPG Memory: 地图层创建失败');
                 }
                 
                 // 获取用户设置的主角ID（从扩展设置中读取）
@@ -970,23 +939,12 @@ window.RPGMemoryGame = {
                 overlay.remove();
             }
 
-            // 清理Phaser的资源缓存
-            if (this.game.cache) {
-                this.game.cache.destroy();
-            }
-            if (this.game.textures) {
-                this.game.textures.destroy();
-            }
-            if (this.game.loader) {
-                this.game.loader.destroy();
-            }
-
             // 销毁游戏实例
             this.game.destroy(true);
             this.game = null;
             this.scene = null;
 
-            console.log('RPG Memory: 游戏和缓存已完全清理');
+            console.log('RPG Memory: 游戏已销毁');
         }
     }
 };
