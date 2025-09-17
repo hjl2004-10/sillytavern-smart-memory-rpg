@@ -194,6 +194,7 @@
     height: 100%;
     background: #1a1a1a;
     border-radius: 0 0 8px 8px;
+    z-index: 1;  /* 设置较低的层级，确保编辑窗口在上方 */
     /* 防止事件穿透 */
     pointer-events: auto;
     -webkit-tap-highlight-color: transparent;  /* 移除点击高亮 */
