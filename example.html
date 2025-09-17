@@ -278,6 +278,19 @@ window.RPGMemoryGame = {
     init: function() {
         if (this.game) return; // 防止重复初始化
 
+        // 确保canvas存在并重置其状态
+        const canvas = document.getElementById('rpg-canvas');
+        if (!canvas) {
+            console.error('RPG Memory: Canvas元素未找到');
+            return;
+        }
+
+        // 重置canvas属性，防止移动端尺寸问题
+        canvas.style.removeProperty('width');
+        canvas.style.removeProperty('height');
+        canvas.width = 192;
+        canvas.height = 160;
+
         // 智能资源服务器选择
         // 首先检查用户配置
         const customServer = document.getElementById('smart_memory_rpg_resource_server')?.value?.trim();
@@ -648,15 +661,6 @@ window.RPGMemoryGame = {
             
             showDialogue(npcData) {
                 const dialogue = npcData.dialogue || '...';
-                const maxWidth = 170;
-                const dialogHeight = 60;
-
-                // 创建Phaser背景框（保留像素化背景）
-                const dialogBg = this.add.rectangle(96, 120, 180, dialogHeight, 0x000000, 0.95);
-                dialogBg.setDepth(20);
-                dialogBg.setStrokeStyle(2, 0xffffff);
-
-                // 创建HTML对话框显示清晰文字
                 const emotion = npcData.emotion === 'happy' ? '😊' :
                                npcData.emotion === 'sad' ? '😢' :
                                npcData.emotion === 'angry' ? '😠' : '😐';
@@ -667,7 +671,7 @@ window.RPGMemoryGame = {
                     displayText = dialogue.substring(0, maxChars) + '...';
                 }
 
-                // 创建HTML元素
+                // 只使用HTML元素创建对话框，不再使用Phaser背景框
                 const gameContainer = document.getElementById('rpg-game-container');
                 if (gameContainer) {
                     // 获取或创建覆盖层
@@ -686,9 +690,20 @@ window.RPGMemoryGame = {
                         <div class="rpg-dialogue-text">${displayText}</div>
                     `;
 
-                    // 计算位置（考虑zoom=4的缩放）
-                    bubble.style.left = `${96 * 4}px`;  // 96是NPC的x坐标，乘4倍缩放
-                    bubble.style.top = `${(120 - 20) * 4}px`;  // 120是NPC的y坐标，减20让对话框在头顶
+                    // 计算NPC在画布上的实际位置（考虑zoom=4的缩放）
+                    const npcSprite = this.dynamicNPCs[npcData.id]?.sprite;
+                    if (npcSprite) {
+                        // 获取NPC的世界坐标并转换为屏幕坐标
+                        const screenX = npcSprite.x * 4; // 考虑zoom=4
+                        const screenY = (npcSprite.y - 20) * 4; // 在NPC头顶显示，考虑zoom=4
+
+                        bubble.style.left = `${screenX}px`;
+                        bubble.style.top = `${screenY}px`;
+                    } else {
+                        // 如果找不到NPC精灵，使用默认位置
+                        bubble.style.left = `${96 * 4}px`;
+                        bubble.style.top = `${(120 - 20) * 4}px`;
+                    }
 
                     overlay.appendChild(bubble);
 
@@ -696,7 +711,6 @@ window.RPGMemoryGame = {
                     const displayTime = Math.min(3000 + dialogue.length * 30, 6000);
 
                     this.time.delayedCall(displayTime, () => {
-                        dialogBg.destroy();
                         bubble.remove();
                     });
                 }
@@ -906,9 +920,32 @@ window.RPGMemoryGame = {
     
     destroy: function() {
         if (this.game) {
+            // 清理HTML对话框覆盖层
+            const overlay = document.querySelector('.rpg-dialogue-overlay');
+            if (overlay) {
+                overlay.remove();
+            }
+
+            // 重置canvas状态，防止尺寸残留
+            const canvas = document.getElementById('rpg-canvas');
+            if (canvas) {
+                canvas.style.width = '';
+                canvas.style.height = '';
+                canvas.width = 192;
+                canvas.height = 160;
+            }
+
             this.game.destroy(true);
             this.game = null;
             this.scene = null;
+
+            // 确保完全清理，防止移动端尺寸问题
+            setTimeout(() => {
+                if (canvas) {
+                    canvas.style.removeProperty('width');
+                    canvas.style.removeProperty('height');
+                }
+            }, 100);
         }
     }
 };
