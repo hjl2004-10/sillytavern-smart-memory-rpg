@@ -185,7 +185,7 @@
 }
 
 #rpg-game-container {
-    position: absolute;  /* 改为绝对定位 */
+    position: relative;  /* 改为相对定位，作为编辑窗口的定位基准 */
     top: 0;
     left: 0;
     right: 0;
@@ -686,5 +686,164 @@ div#rpg-floating-button {
     .rpg-dialogue-text {
         font-size: 10px !important;
     }
+}
+
+/* NPC编辑窗口样式 - 修正定位 */
+#npc-edit-modal {
+    position: absolute !important;  /* 改为相对定位 */
+    top: 0 !important;
+    left: 0 !important;
+    right: 0 !important;
+    bottom: 0 !important;
+    z-index: 1000 !important;  /* 相对于游戏窗口的高层级 */
+}
+
+.npc-edit-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.7);
+}
+
+.npc-edit-container {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    background: #1a1a1a;
+    border: 2px solid #333;
+    border-radius: 10px;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.8);
+    width: 90%;
+    max-width: 500px;
+    max-height: 80vh;
+    overflow: auto;
+}
+
+.npc-edit-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 15px 20px;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    border-radius: 8px 8px 0 0;
+}
+
+.npc-edit-header h3 {
+    margin: 0;
+    font-size: 18px;
+    font-weight: bold;
+}
+
+.npc-edit-close {
+    background: transparent;
+    border: none;
+    color: white;
+    font-size: 18px;
+    cursor: pointer;
+    padding: 0;
+    width: 30px;
+    height: 30px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    transition: background-color 0.3s;
+}
+
+.npc-edit-close:hover {
+    background: rgba(255, 255, 255, 0.2);
+}
+
+.npc-edit-tip {
+    padding: 10px 20px;
+    background: #2a2a2a;
+    border-bottom: 1px solid #333;
+    color: #888;
+    text-align: center;
+}
+
+.npc-edit-content {
+    padding: 20px;
+}
+
+.npc-edit-form {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+}
+
+.npc-edit-row {
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+}
+
+.npc-edit-row label {
+    color: #ccc;
+    font-weight: bold;
+    font-size: 14px;
+}
+
+.npc-edit-row input,
+.npc-edit-row select,
+.npc-edit-row textarea {
+    padding: 10px;
+    border: 1px solid #444;
+    border-radius: 5px;
+    background: #2a2a2a;
+    color: #fff;
+    font-size: 14px;
+}
+
+.npc-edit-row input:focus,
+.npc-edit-row select:focus,
+.npc-edit-row textarea:focus {
+    outline: none;
+    border-color: #667eea;
+    box-shadow: 0 0 5px rgba(102, 126, 234, 0.5);
+}
+
+.npc-edit-row textarea {
+    min-height: 80px;
+    resize: vertical;
+}
+
+.npc-edit-actions {
+    display: flex;
+    gap: 10px;
+    margin-top: 20px;
+    justify-content: flex-end;
+}
+
+.npc-edit-btn {
+    padding: 10px 20px;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 14px;
+    transition: all 0.3s;
+}
+
+.npc-edit-btn-save {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+}
+
+.npc-edit-btn-save:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+}
+
+.npc-edit-btn-cancel {
+    background: #444;
+    color: #ccc;
+}
+
+.npc-edit-btn-cancel:hover {
+    background: #555;
 }
 

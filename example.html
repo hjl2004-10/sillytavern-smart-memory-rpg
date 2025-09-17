@@ -1153,8 +1153,16 @@ window.RPGMemoryGame = {
                 // 处理附加说明
                 document.getElementById('npc_edit_description').value = npcData.description || npcData.relationship || '';
 
-                // 显示编辑窗口
-                document.getElementById('npc-edit-modal').style.display = 'block';
+                // 显示编辑窗口 - 移动到游戏容器内
+                const editModal = document.getElementById('npc-edit-modal');
+                const gameContainer = document.getElementById('rpg-game-container');
+
+                // 如果编辑窗口不在游戏容器内，则移动过去
+                if (editModal && gameContainer && editModal.parentNode !== gameContainer) {
+                    gameContainer.appendChild(editModal);
+                }
+
+                editModal.style.display = 'block';
             }
             
             update() {
